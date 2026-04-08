@@ -1,0 +1,37 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  href?: string;
+  available?: boolean;
+}
+
+const { title, description, href, available = true } = Astro.props;
+---
+
+<div class:list={[
+  'rounded-lg border p-6',
+  available ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50',
+]}>
+  <h3 class:list={[
+    'text-lg font-semibold',
+    available ? 'text-gray-900' : 'text-gray-400',
+  ]}>
+    {href && available ? (
+      <a href={href} class="hover:text-blue-600 transition-colors">{title}</a>
+    ) : (
+      title
+    )}
+  </h3>
+  <p class:list={[
+    'mt-2 text-sm',
+    available ? 'text-gray-600' : 'text-gray-400',
+  ]}>
+    {description}
+  </p>
+  {!available && (
+    <span class="mt-3 inline-block text-xs font-medium text-gray-400 uppercase tracking-wide">
+      Coming soon
+    </span>
+  )}
+</div>

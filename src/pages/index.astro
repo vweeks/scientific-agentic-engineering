@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import FeatureCard from '../components/FeatureCard.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Scientific Agentic Engineering">
+  <Hero />
+
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <FeatureCard
+        title="Framework"
+        description="Principles and patterns for responsible AI-agent integration in scientific software development."
+        href={`${base}framework/`}
+      />
+      <FeatureCard
+        title="Tutorials"
+        description="Hands-on guides with interactive examples for applying the framework in practice."
+        available={false}
+      />
+      <FeatureCard
+        title="Community Catalog"
+        description="Curated collection of tools, patterns, and case studies from the scientific software community."
+        available={false}
+      />
+      <FeatureCard
+        title="Workshops"
+        description="Recordings and materials from community events, webinars, and training sessions."
+        available={false}
+      />
+    </div>
+  </section>
+</BaseLayout>

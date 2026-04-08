@@ -1,0 +1,35 @@
+---
+const currentPath = Astro.url.pathname;
+const base = import.meta.env.BASE_URL;
+
+const links = [
+  { href: `${base}`, label: 'Home' },
+  { href: `${base}framework/`, label: 'Framework' },
+  { href: `${base}about/`, label: 'About' },
+];
+---
+
+<nav class="bg-white border-b border-gray-200">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <a href={base} class="text-lg font-semibold text-gray-900">
+        Scientific Agentic Engineering
+      </a>
+      <div class="flex gap-6">
+        {links.map(({ href, label }) => (
+          <a
+            href={href}
+            class:list={[
+              'text-sm font-medium transition-colors',
+              currentPath === href || (href !== base && currentPath.startsWith(href))
+                ? 'text-blue-600'
+                : 'text-gray-600 hover:text-gray-900',
+            ]}
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</nav>
