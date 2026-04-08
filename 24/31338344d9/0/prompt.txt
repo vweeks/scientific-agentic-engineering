@@ -1,0 +1,33 @@
+Execute the plan from plan.md
+
+---
+
+Continue
+
+---
+
+Continue with batch 2
+
+---
+
+Make an addition to the dev doc that notes that I ran `npm run dev` to verify the current state of the website and that all links worked, before I continued to the next batch.
+
+---
+
+I also want to consider adding the BSSw page for the fellowship in an appropriate place in the site (https://bssw.io/fellows/victor-weeks)
+
+---
+
+It seems to me that we only need one place for the general BSSw fellowship program link, and one for the specific link -- the footer and the about page.
+
+---
+
+great, update the dev doc and then proceed to the next stage
+
+---
+
+Continue
+
+---
+
+review the file tree, then create the repo and push
