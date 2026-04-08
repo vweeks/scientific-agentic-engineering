@@ -372,6 +372,37 @@ Batch 3 was the simplest of the three batches — a single file with well-establ
 
 ---
 
+### Interaction 14: GitHub Repo Creation, Commits, and First Deploy
+
+**Human prompt (paraphrased):**
+> Review the file tree, then create the repo and push.
+
+**What the AI did:**
+- Listed the full file tree and verified no sensitive content would be committed (grep for SOW/budget keywords — all matches were references to the *policy*, not actual SOW content)
+- Created the GitHub repo via `gh repo create scientific-agentic-engineering --public --source=. --remote=origin`
+- Made 3 focused commits matching the plan's batch structure:
+  1. "Initial project setup" — `.gitignore`, licenses, `README.md`, `CITATION.cff` (5 files)
+  2. "Add Astro site with landing page" — all site structure, components, layouts, pages, content, docs (24 files)
+  3. "Add GitHub Actions deployment" — `.github/workflows/deploy.yml` (1 file)
+- Pushed to `origin/main`
+- First deploy failed: the `deploy` job returned 404 because GitHub Pages wasn't configured yet when the workflow ran (the chicken-and-egg problem noted in the Session 1 critique)
+- Configured Pages source to "GitHub Actions" via `gh api repos/.../pages -X POST -f build_type=workflow`
+- Re-ran the failed deploy job — succeeded
+- Verified the live site returns HTTP 200 at `https://vweeks.github.io/scientific-agentic-engineering/`
+
+**Key findings/output:**
+- **GitHub Pages chicken-and-egg confirmed**: The critique agent in Session 1 (Interaction 3) predicted this exact failure. Pages must be configured *before* the deploy job runs, but the configuration requires the repo to exist with the workflow file already pushed. Solution: push first, configure Pages via API, re-run the failed job.
+- **Node.js 20 deprecation warnings**: GitHub Actions flagged that `actions/checkout@v4`, `actions/setup-node@v4`, and `actions/deploy-pages@v4` use Node.js 20, which will be deprecated June 2026. Not blocking but worth tracking.
+- Site is live and serving correctly.
+
+**Human decisions:**
+- Instructed the AI to review the file tree before pushing — a final human-directed verification step before making the work public
+
+**Observation:**
+The 3-commit structure from the plan proved its value immediately: if the deploy had failed due to a build issue rather than a Pages config issue, the commit history would have made bisecting trivial. The Pages chicken-and-egg problem was handled cleanly because it was anticipated in the planning phase — a case where **upfront critique of a plan directly prevented confusion during execution.** The AI resolved the issue autonomously (API call + re-run) without needing human intervention, which is appropriate for a well-understood operational problem.
+
+---
+
 ## Template for Future Entries
 
 ```markdown
