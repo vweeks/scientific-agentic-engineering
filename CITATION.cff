@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "Scientific Agentic Engineering"
+message: "If you use this work, please cite it as below."
+type: software
+authors:
+  - family-names: Weeks
+    given-names: Victor
+    orcid: "https://orcid.org/0000-0003-0159-4556"
+    affiliation: "NSF National Center for Atmospheric Research (NSF NCAR)"
+repository-code: "https://github.com/vweeks/scientific-agentic-engineering"
+url: "https://vweeks.github.io/scientific-agentic-engineering/"
+abstract: >-
+  Methodology and framework for integrating AI agents into scientific
+  software development workflows. Developed as part of the 2026 Better
+  Scientific Software (BSSw) Fellowship.
+keywords:
+  - scientific software
+  - AI agents
+  - agentic engineering
+  - software engineering
+  - BSSw Fellowship
+license-url: "https://github.com/vweeks/scientific-agentic-engineering/blob/main/LICENSE-CODE"
+date-released: "2026-04-08"
