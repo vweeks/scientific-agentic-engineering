@@ -403,6 +403,32 @@ The 3-commit structure from the plan proved its value immediately: if the deploy
 
 ---
 
+## Session 3 — 2026-04-15: Post-Deploy Bug Fixes
+
+### Interaction 15: Nav Link Slash Bug (Base Path Concatenation)
+
+**Human prompt (paraphrased):**
+> On the live site, clicking a nav link breaks it because the URL doesn't preserve the `/` between the base path and the route.
+
+**What the AI did:**
+- Reproduced the issue by inspecting built HTML in `dist/index.html`: hrefs were rendering as `/scientific-agentic-engineeringframework/` (no slash between base and route)
+- Traced the cause to `astro.config.mjs` using `base: '/scientific-agentic-engineering'` (no trailing slash), combined with templates like `${import.meta.env.BASE_URL}framework/` that assume the base ends in `/`
+- Noted an internal inconsistency: `BaseLayout.astro` had already worked around the problem with `${BASE_URL}/favicon.svg` (leading slash on the path), while `Nav.astro`, `Hero.astro`, `pages/index.astro`, and `pages/framework/index.astro` assumed the opposite convention
+- Fixed by (a) adding the trailing slash to `base` in `astro.config.mjs` so all templates compose correctly, and (b) removing the now-redundant leading slash in the `BaseLayout.astro` favicon line to avoid `//favicon.svg`
+- Rebuilt and verified all hrefs render as `/scientific-agentic-engineering/framework/` (with the slash)
+
+**Key findings/output:**
+- Astro 6 does **not** auto-normalize `import.meta.env.BASE_URL` to end with a trailing slash — it reflects the configured `base` literally. This differs from some older Astro documentation examples and is a realistic papercut for projects deployed under a subpath.
+- The bug was invisible on the home page itself (which loads at the base URL directly) and only surfaced on *clicks* into subpaths — a reminder that automated CI builds passing ≠ the site works as users would use it. The `npm run build` and GitHub Pages deploy both succeeded in Session 2; the defect was latent.
+
+**Human decisions:**
+- Chose to fix at the config level (add trailing slash to `base`) rather than patch each template — a convention-at-the-source fix so future templates compose correctly by default
+
+**Observation:**
+This is the first post-deploy defect in the project, and it exposes a gap in Session 2's verification: the dev-server smoke test (Interaction 11) and the deploy verification (Interaction 14) both confirmed the site *loaded*, not that in-site navigation worked. A more complete smoke test would click through each top-level nav link. This is a small but worth-keeping example of the difference between "builds + serves HTTP 200" and "functions for a user," which is directly relevant to the fellowship's broader theme of how AI-assisted workflows should define "done."
+
+---
+
 ## Template for Future Entries
 
 ```markdown
