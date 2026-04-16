@@ -1,0 +1,1 @@
+For this website, it looks like clicking a link breaks it because it doesn't preserve the slash '/'
