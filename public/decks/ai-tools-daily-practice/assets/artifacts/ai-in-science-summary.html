@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charting a Course for AI in Science — Visual Summary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Spline+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0c1822;
+    --ink-2:#11212e;
+    --panel:#152532;
+    --panel-edge:#21384a;
+    --paper:#ede4d3;
+    --paper-dim:#b8b09f;
+    --paper-faint:#7d8a93;
+    --amber:#e8a02f;
+    --amber-soft:#f2c97a;
+    --coral:#e2674a;
+    --teal:#5fb6a8;
+    --teal-deep:#2f7d72;
+    --line:#2c4456;
+    --grid:rgba(95,182,168,.08);
+    --can:#5fb6a8;
+    --should:#e8a02f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(95,182,168,.10), transparent 60%),
+      radial-gradient(1000px 600px at 0% 100%, rgba(232,160,47,.07), transparent 55%),
+      var(--ink);
+    color:var(--paper);
+    font-family:'Spline Sans',system-ui,sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  /* faint chart grid overlay */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(ellipse 90% 80% at 50% 30%,#000 30%,transparent 95%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 28px}
+  .mono{font-family:'IBM Plex Mono',monospace}
+
+  /* ---------- HERO ---------- */
+  header.hero{padding:88px 0 56px;position:relative}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--teal);display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--teal-deep),transparent)}
+  h1{
+    font-family:'Fraunces',serif;font-weight:400;font-optical-sizing:auto;
+    font-size:clamp(40px,7vw,82px);line-height:1.02;letter-spacing:-.015em;
+    margin:26px 0 18px;color:var(--paper);
+  }
+  h1 em{font-style:italic;color:var(--amber-soft)}
+  .dek{font-size:clamp(17px,2.3vw,21px);color:var(--paper-dim);max-width:60ch;font-weight:400}
+  .byline{
+    margin-top:30px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;
+    font-size:13.5px;color:var(--paper-faint);font-family:'IBM Plex Mono',monospace;
+  }
+  .byline strong{color:var(--paper);font-weight:500}
+  .byline a{color:var(--teal);text-decoration:none;border-bottom:1px dotted var(--teal-deep)}
+
+  /* ---------- SECTION SCAFFOLD ---------- */
+  section{padding:54px 0;border-top:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:30px;flex-wrap:wrap}
+  .sec-num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--amber);letter-spacing:.1em}
+  h2{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(26px,4vw,40px);letter-spacing:-.01em;line-height:1.1}
+  .lede{font-size:18px;color:var(--paper-dim);max-width:66ch;margin-bottom:8px}
+  p{max-width:68ch}
+  .accent-can{color:var(--teal)}
+  .accent-should{color:var(--amber)}
+
+  /* central tension banner */
+  .tension{
+    margin:34px 0 6px;display:flex;align-items:center;justify-content:center;gap:clamp(10px,4vw,46px);
+    flex-wrap:wrap;text-align:center;
+  }
+  .tension .word{font-family:'Fraunces',serif;font-style:italic;font-size:clamp(30px,6vw,58px)}
+  .tension .vs{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--paper-faint);letter-spacing:.3em;border:1px solid var(--line);border-radius:30px;padding:8px 16px}
+
+  /* ---------- DUAL LENS ---------- */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:18px}
+  @media(max-width:720px){.twocol{grid-template-columns:1fr}}
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--ink-2));
+    border:1px solid var(--panel-edge);border-radius:16px;padding:24px 24px 26px;
+    position:relative;overflow:hidden;
+  }
+  .card h3{font-family:'Fraunces',serif;font-weight:500;font-size:20px;margin-bottom:8px}
+  .card p{font-size:15px;color:var(--paper-dim)}
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:14px;display:inline-block}
+
+  /* ---------- STAT STRIP ---------- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:8px}
+  @media(max-width:720px){.stats{grid-template-columns:1fr}}
+  .stat .big{font-family:'Fraunces',serif;font-size:clamp(46px,8vw,68px);line-height:1;color:var(--amber-soft)}
+  .stat .lab{font-size:14.5px;color:var(--paper-dim);margin-top:8px}
+  .stat .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--paper-faint);margin-top:6px}
+  .barwrap{height:8px;background:var(--ink-2);border-radius:6px;margin-top:16px;overflow:hidden;border:1px solid var(--panel-edge)}
+  .bar{height:100%;border-radius:6px;width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+
+  /* ---------- FORCES ---------- */
+  .figure{margin:14px 0 6px}
+  .figcap{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--paper-faint);margin-top:14px;letter-spacing:.04em}
+  svg{display:block;width:100%;height:auto}
+  svg text{font-family:'Spline Sans',sans-serif;fill:var(--paper)}
+  .svg-mono{font-family:'IBM Plex Mono',monospace}
+
+  /* ---------- LIFECYCLE CARDS ---------- */
+  .stage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:26px}
+  @media(max-width:900px){.stage-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.stage-grid{grid-template-columns:1fr}}
+  .stage{
+    background:linear-gradient(180deg,var(--panel),var(--ink-2));
+    border:1px solid var(--panel-edge);border-radius:14px;padding:20px;position:relative;
+  }
+  .stage .idx{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--amber)}
+  .stage h4{font-family:'Fraunces',serif;font-weight:500;font-size:18px;margin:10px 0 14px;line-height:1.15}
+  .stage .block{font-size:13.5px;line-height:1.5}
+  .stage .block .k{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:3px}
+  .stage .can .k{color:var(--teal)}
+  .stage .should{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+  .stage .should .k{color:var(--coral)}
+  .stage .block p{color:var(--paper-dim);font-size:13.5px}
+
+  /* ---------- ECOSYSTEM ---------- */
+  .who{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}
+  @media(max-width:720px){.who{grid-template-columns:1fr 1fr}}
+  @media(max-width:460px){.who{grid-template-columns:1fr}}
+  .chip{
+    border:1px solid var(--panel-edge);border-radius:12px;padding:14px 16px;background:var(--ink-2);
+    font-size:13.5px;color:var(--paper-dim);
+  }
+  .chip b{display:block;color:var(--paper);font-family:'Fraunces',serif;font-weight:500;font-size:15px;margin-bottom:3px}
+
+  /* takeaways list */
+  ul.clean{list-style:none;margin-top:14px;display:grid;gap:12px}
+  ul.clean li{position:relative;padding-left:26px;color:var(--paper-dim);max-width:70ch}
+  ul.clean li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;border:2px solid var(--amber);border-radius:50%}
+
+  /* closing */
+  .closing{
+    background:linear-gradient(135deg,rgba(232,160,47,.10),rgba(95,182,168,.06));
+    border:1px solid var(--panel-edge);border-radius:20px;padding:40px clamp(24px,5vw,52px);margin:8px 0 0;
+  }
+  .closing .pull{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:clamp(22px,3.4vw,32px);line-height:1.3;color:var(--paper)}
+
+  footer{padding:48px 0 70px;color:var(--paper-faint);font-size:13px;font-family:'IBM Plex Mono',monospace;border-top:1px solid var(--line)}
+  footer a{color:var(--teal);text-decoration:none}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.bar{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero reveal">
+    <div class="eyebrow">Visual Summary · Issues in Science &amp; Technology</div>
+    <h1>Charting a Course<br>for <em>AI in Science</em></h1>
+    <p class="dek">Rather than bolting AI onto research in a scattershot way, the scientific community needs a deliberative approach — one that keeps asking, at every stage, what AI <em class="accent-can">can</em> do versus what it <em class="accent-should">should</em> do.</p>
+    <div class="byline">
+      <span><strong>Catherine Aiken</strong> · <strong>Steph Batalis</strong> · <strong>Greg Tananbaum</strong></span>
+      <span>CSET (Georgetown) &amp; ORCA</span>
+      <span>Vol. XLII · No. 3 · Spring 2026</span>
+      <a href="https://issues.org/ai-in-science-aiken-batalis-tananbaum/" target="_blank" rel="noopener">read original ↗</a>
+    </div>
+  </header>
+
+  <!-- 01 THE CENTRAL TENSION -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">01</span><h2>The question under everything</h2></div>
+    <p class="lede">AI is reshaping the whole scientific enterprise — for individual researchers, across fields, and for the system as a whole. The authors argue that the single thread running through every decision is a deceptively simple one.</p>
+    <div class="tension">
+      <span class="word accent-can">can</span>
+      <span class="vs">VS</span>
+      <span class="word accent-should">should</span>
+    </div>
+    <p style="text-align:center;color:var(--paper-faint);font-size:14px;margin-top:10px">What AI <span class="accent-can">is capable of</span> doing is not the same as what it <span class="accent-should">ought to</span> do for science.</p>
+  </section>
+
+  <!-- 02 DUAL LENS -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">02</span><h2>AI is both the subject and the tool</h2></div>
+    <p class="lede">Writing from CSET, the authors see the shift through two lenses at once — and that double vantage is where the tensions surface.</p>
+    <div class="twocol">
+      <div class="card">
+        <span class="tag">Research subject</span>
+        <h3>They study AI</h3>
+        <p>LLMs like those behind ChatGPT, and scientific models like AlphaFold — plus the broader trends shaping how AI develops across the science-and-tech landscape.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Research tool</span>
+        <h3>They build with AI</h3>
+        <p>LLM-driven workflows clean and curate metadata for their Map of Science and translate, summarize, and classify documents — turning months of scripting into days. Yet that very leverage <em>amplifies</em> the value of human judgment: deciding what data to include, validating outputs, and documenting systems.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 FORCES -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">03</span><h2>The forces pushing science toward AI</h2></div>
+    <p class="lede">Adoption isn't driven by AI's power alone. A set of structural pressures is funneling researchers toward fast, high-volume tool use — sometimes regardless of its effect on rigor.</p>
+    <div class="figure" id="fig-forces"></div>
+    <p class="figcap">Fig. 1 — Converging pressures channel researchers toward hurried, under-understood AI adoption.</p>
+  </section>
+
+  <!-- 04 STATS -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Adoption is racing ahead of readiness</h2></div>
+    <p class="lede">A 2025 Elsevier survey of 3,000 researchers shows uptake climbing fast — while confidence and training lag well behind.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="big" data-count="58">0%</div>
+        <div class="lab">of researchers now use AI tools in their work</div>
+        <div class="sub">▲ up from 37% in 2024</div>
+        <div class="barwrap"><div class="bar" data-w="58" style="background:linear-gradient(90deg,var(--teal-deep),var(--teal))"></div></div>
+      </div>
+      <div class="stat">
+        <div class="big" data-count="27">0%</div>
+        <div class="lab">believe they have adequate training in those tools</div>
+        <div class="sub">worldwide</div>
+        <div class="barwrap"><div class="bar" data-w="27" style="background:linear-gradient(90deg,#9a6a1a,var(--amber))"></div></div>
+      </div>
+      <div class="stat">
+        <div class="big" data-count="22">0%</div>
+        <div class="lab">of US respondents think it will improve the quality of their work</div>
+        <div class="sub">a minority</div>
+        <div class="barwrap"><div class="bar" data-w="22" style="background:linear-gradient(90deg,#8f3320,var(--coral))"></div></div>
+      </div>
+    </div>
+    <p style="margin-top:22px;color:var(--paper-dim)">Researchers are largely figuring this out alone — incentives push them to adopt new, insufficiently understood tools through hurried, self-taught learning.</p>
+  </section>
+
+  <!-- 05 LIFECYCLE -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">05</span><h2>AI is altering every stage of research</h2></div>
+    <p class="lede">Because AI touches the whole research process, the authors walk it stage by stage — pairing what AI <span class="accent-can">can do</span> with the <span style="color:var(--coral)">tension</span> each capability surfaces.</p>
+    <div class="figure" id="fig-flow"></div>
+    <div class="stage-grid">
+      <div class="stage">
+        <span class="idx">STAGE 01</span>
+        <h4>Ideate &amp; Design</h4>
+        <div class="block can"><span class="k">AI can</span><p>Accelerate literature reviews, generate hypotheses, and design experiments — marketed as "co-scientists" and research partners.</p></div>
+        <div class="block should"><span class="k">The tension</span><p>Hallucinated citations and exaggerated hypotheses; validation failures; and a quieter shift in how scientists learn from prior work and form ideas.</p></div>
+      </div>
+      <div class="stage">
+        <span class="idx">STAGE 02</span>
+        <h4>Conduct &amp; Experiment</h4>
+        <div class="block can"><span class="k">AI can</span><p>Run self-driving labs for chemical and biological experiments, and even act as "AI interviewers" with human subjects at unmatched scale.</p></div>
+        <div class="block should"><span class="k">The tension</span><p>Ethical conduct and oversight haven't caught up — and automation erodes the value of face-to-face and field engagement, for subjects and researchers alike.</p></div>
+      </div>
+      <div class="stage">
+        <span class="idx">STAGE 03</span>
+        <h4>Interpret Results</h4>
+        <div class="block can"><span class="k">AI can</span><p>Derive conclusions rapidly — protein-structure prediction (e.g. AlphaFold) being the canonical example of speed over lab drudgery.</p></div>
+        <div class="block should"><span class="k">The tension</span><p>Predictions can obscure real-world messiness and rarely explain their reasoning; they must be coupled with human scientists who contextualize and interpret.</p></div>
+      </div>
+      <div class="stage">
+        <span class="idx">STAGE 04</span>
+        <h4>Vet &amp; Communicate</h4>
+        <div class="block can"><span class="k">AI can</span><p>Ease a straining peer-review system — citation checks, metadata validation, ethics screening, and paper-mill detection.</p></div>
+        <div class="block should"><span class="k">The tension</span><p>When publication is the career metric, the same tools get used to <em>generate</em> manuscripts — blurring who, or what, did the work.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 TRADE-OFFS -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Efficiency carries a hidden bill</h2></div>
+    <p class="lede">Hurried, ad hoc adoption tilts science toward three lopsided trades — and risks entrenching the enterprise's existing flaws while widening the gap between the resourced and the rest.</p>
+    <div class="figure" id="fig-scale"></div>
+    <p class="figcap">Fig. 3 — Each trade favors the left when AI is adopted without deliberate guardrails.</p>
+    <ul class="clean">
+      <li><strong>Outsourced core work.</strong> Handing literature review, data collection, analysis, and writing to AI can cost researchers the familiarity that underpins real expertise.</li>
+      <li><strong>Deepening inequity.</strong> Uneven access to tools and compute concentrates power among a small subset of well-resourced researchers and institutions.</li>
+      <li><strong>Eroding trust.</strong> If claims can't be audited or interpreted — and AI quietly amplifies human bias — science's legitimacy as a shared enterprise weakens.</li>
+    </ul>
+  </section>
+
+  <!-- 07 THE WAY FORWARD -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">07</span><h2>The remedy: deliberate "speed bumps"</h2></div>
+    <p class="lede">The fix isn't to halt AI but to build sustained space to ask questions, reflect, and debate — paired with a stronger evidence base. The authors propose two reinforcing tracks.</p>
+    <div class="figure" id="fig-forum"></div>
+    <p class="figcap">Fig. 4 — Ongoing forums and a growing evidence base feed each other, rather than running as one-off events.</p>
+
+    <h3 style="font-family:'Fraunces',serif;font-weight:500;font-size:21px;margin:34px 0 4px">A scientist-led, distributed responsibility</h3>
+    <p style="color:var(--paper-dim)">No single entity owns this. The work is spread across an ecosystem already equipped to convene:</p>
+    <div class="who">
+      <div class="chip"><b>Convening bodies</b>NASEM, AAAS, and the American Academy of Arts &amp; Sciences drive sustained, cross-disciplinary gatherings.</div>
+      <div class="chip"><b>Nonprofits</b>Groups like ORCA assemble focused coalitions around specific problems.</div>
+      <div class="chip"><b>Field communities</b>Efforts such as Responsible AI × Biodesign coordinate norms across disciplines.</div>
+      <div class="chip"><b>Conferences</b>Metascience (ICSSI) and AI venues (AAAI, NeurIPS) can carve out reflective sessions.</div>
+      <div class="chip"><b>Federal funders</b>Agencies like NSF can sponsor studies of researchers' AI use and build evidence.</div>
+      <div class="chip"><b>The community</b>Coordinated, not centralized — and led by scientists themselves.</div>
+    </div>
+  </section>
+
+  <!-- 08 PRECEDENT -->
+  <section class="reveal">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Science has done this before</h2></div>
+    <p class="lede">Collective course-correction has precedent — moments when the community stepped in to shape a technology's trajectory rather than watch it unfold.</p>
+    <div class="figure" id="fig-timeline"></div>
+    <p class="figcap">Fig. 5 — Precedents for coordinated, scientist-led deliberation cited by the authors.</p>
+  </section>
+
+  <!-- CLOSING -->
+  <section class="reveal" style="border-top:none">
+    <div class="closing">
+      <p class="pull">The choice is no longer <span class="accent-should">whether</span> AI will reshape science and its bond with society — it's whether the scientific community plays an active, strategic role in <span class="accent-can">how</span>, or simply watches from the margins.</p>
+    </div>
+  </section>
+
+  <footer>
+    Source · Catherine Aiken, Steph Batalis &amp; Greg Tananbaum, “Charting a Course for AI in Science,” <em>Issues in Science and Technology</em> 42, no. 3 (Spring 2026): 48–51. doi.org/10.58875/HLEA4798<br>
+    Visual summary · paraphrased for the diagrams above · <a href="https://issues.org/ai-in-science-aiken-batalis-tananbaum/" target="_blank" rel="noopener">issues.org ↗</a>
+  </footer>
+
+</div>
+
+<script>
+/* ---------- SVG builders ---------- */
+const NS="http://www.w3.org/2000/svg";
+function svg(vb){const s=document.createElementNS(NS,"svg");s.setAttribute("viewBox",vb);return s;}
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function txt(x,y,s,a={}){const t=el("text",Object.assign({x,y},a));t.textContent=s;return t;}
+
+/* ----- Fig 1: Converging forces ----- */
+(function(){
+  const s=svg("0 0 900 360");
+  const cx=620,cy=180;
+  // target node
+  const ring=el("circle",{cx,cy,r:78,fill:"rgba(232,160,47,.08)",stroke:"var(--amber)","stroke-width":1.5});
+  s.appendChild(ring);
+  s.appendChild(txt(cx,cy-8,"Pressure to",{ "text-anchor":"middle","font-size":17,"font-family":"Fraunces, serif",fill:"var(--paper)"}));
+  s.appendChild(txt(cx,cy+16,"adopt AI",{ "text-anchor":"middle","font-size":17,"font-family":"Fraunces, serif",fill:"var(--amber-soft)"}));
+  const forces=[
+    {y:54,t:"Funding flows to AI",d:"while other research is squeezed"},
+    {y:124,t:"Funders prioritize AI",d:"+ govt signals (Genesis Mission)"},
+    {y:194,t:"\u201cPublish or perish\u201d",d:"rewards speed & volume"},
+    {y:264,t:"Pressure to communicate",d:"across more platforms, faster"}
+  ];
+  forces.forEach((f,i)=>{
+    const x0=40,bx=300;
+    const g=el("g",{});
+    g.appendChild(el("rect",{x:x0,y:f.y,width:bx,height:46,rx:10,fill:"var(--panel)",stroke:"var(--panel-edge)"}));
+    g.appendChild(txt(x0+18,f.y+20,f.t,{"font-size":14,"font-weight":600,fill:"var(--paper)"}));
+    g.appendChild(txt(x0+18,f.y+37,f.d,{"font-size":11.5,fill:"var(--paper-faint)","font-family":"IBM Plex Mono, monospace"}));
+    // arrow toward center
+    const sx=x0+bx, sy=f.y+23;
+    const path=el("path",{d:`M ${sx} ${sy} C ${sx+90} ${sy}, ${cx-150} ${cy}, ${cx-80} ${cy}`,fill:"none",stroke:"var(--teal-deep)","stroke-width":1.6,"stroke-dasharray":"5 5",opacity:.8});
+    g.appendChild(path);
+    s.appendChild(g);
+  });
+  // arrowhead
+  s.appendChild(el("path",{d:`M ${cx-82} ${cy-6} L ${cx-70} ${cy} L ${cx-82} ${cy+6} Z`,fill:"var(--teal)"}));
+  document.getElementById("fig-forces").appendChild(s);
+})();
+
+/* ----- Fig 2: Research lifecycle flow ----- */
+(function(){
+  const s=svg("0 0 900 150");
+  const stages=["IDEATE","CONDUCT","INTERPRET","VET & SHARE"];
+  const n=stages.length, pad=70, span=(900-2*pad)/(n-1);
+  // baseline course path
+  s.appendChild(el("path",{d:`M ${pad} 75 Q 230 30 ${pad+span} 75 T ${pad+2*span} 75 T ${pad+3*span} 75`,fill:"none",stroke:"var(--teal-deep)","stroke-width":2,"stroke-dasharray":"2 7","stroke-linecap":"round"}));
+  stages.forEach((st,i)=>{
+    const x=pad+i*span,y=75;
+    s.appendChild(el("circle",{cx:x,cy:y,r:9,fill:"var(--ink)",stroke:"var(--amber)","stroke-width":2}));
+    s.appendChild(el("circle",{cx:x,cy:y,r:3.5,fill:"var(--amber)"}));
+    s.appendChild(txt(x,y-26,"0"+(i+1),{"text-anchor":"middle","font-size":12,fill:"var(--amber)","font-family":"IBM Plex Mono, monospace"}));
+    s.appendChild(txt(x,y+34,st,{"text-anchor":"middle","font-size":13,"font-weight":600,fill:"var(--paper)","letter-spacing":"1"}));
+  });
+  document.getElementById("fig-flow").appendChild(s);
+})();
+
+/* ----- Fig 3: Three lopsided scales ----- */
+(function(){
+  const s=svg("0 0 900 200");
+  const trades=[
+    {x:150,L:"SPEED",R:"rigor"},
+    {x:450,L:"SCALE",R:"understanding"},
+    {x:750,L:"OUTPUT",R:"insight"}
+  ];
+  trades.forEach(t=>{
+    const cx=t.x,topY=40,tilt=14;
+    // fulcrum
+    s.appendChild(el("path",{d:`M ${cx-16} 150 L ${cx+16} 150 L ${cx} 118 Z`,fill:"var(--panel-edge)"}));
+    s.appendChild(el("line",{x1:cx,y1:118,x2:cx,y2:90,stroke:"var(--paper-faint)","stroke-width":2}));
+    // tilted beam (favoring left = down on left)
+    const beam=el("line",{x1:cx-95,y1:90+tilt,x2:cx+95,y2:90-tilt,stroke:"var(--paper)","stroke-width":3,"stroke-linecap":"round"});
+    s.appendChild(beam);
+    // pans
+    s.appendChild(el("circle",{cx:cx-95,cy:90+tilt+18,r:15,fill:"rgba(232,160,47,.15)",stroke:"var(--amber)","stroke-width":1.5}));
+    s.appendChild(el("circle",{cx:cx+95,cy:90-tilt+18,r:11,fill:"rgba(95,182,168,.10)",stroke:"var(--teal-deep)","stroke-width":1.5}));
+    s.appendChild(el("line",{x1:cx-95,y1:90+tilt,x2:cx-95,y2:90+tilt+18,stroke:"var(--amber)","stroke-width":1}));
+    s.appendChild(el("line",{x1:cx+95,y1:90-tilt,x2:cx+95,y2:90-tilt+18,stroke:"var(--teal-deep)","stroke-width":1}));
+    s.appendChild(txt(cx-95,150,t.L,{"text-anchor":"middle","font-size":13,"font-weight":600,fill:"var(--amber-soft)"}));
+    s.appendChild(txt(cx+95,150,t.R,{"text-anchor":"middle","font-size":13,fill:"var(--teal)","font-style":"italic","font-family":"Fraunces, serif"}));
+    s.appendChild(txt(cx,178,"over",{"text-anchor":"middle","font-size":11,fill:"var(--paper-faint)","font-family":"IBM Plex Mono, monospace"}));
+  });
+  document.getElementById("fig-scale").appendChild(s);
+})();
+
+/* ----- Fig 4: Two reinforcing tracks ----- */
+(function(){
+  const s=svg("0 0 900 230");
+  function node(cx,cy,r,fill,stroke,t1,t2){
+    const g=el("g",{});
+    g.appendChild(el("circle",{cx,cy,r,fill,stroke,"stroke-width":1.5}));
+    g.appendChild(txt(cx,cy-4,t1,{"text-anchor":"middle","font-size":15,"font-family":"Fraunces, serif",fill:"var(--paper)"}));
+    g.appendChild(txt(cx,cy+16,t2,{"text-anchor":"middle","font-size":15,"font-family":"Fraunces, serif",fill:"var(--paper)"}));
+    s.appendChild(g);
+  }
+  node(255,115,82,"rgba(95,182,168,.10)","var(--teal)","Deliberative","forums");
+  node(645,115,82,"rgba(232,160,47,.10)","var(--amber)","Evidence","base");
+  // circulating arrows between
+  s.appendChild(el("path",{d:"M 337 92 C 430 50, 470 50, 563 92",fill:"none",stroke:"var(--teal-deep)","stroke-width":2}));
+  s.appendChild(el("path",{d:"M 563 138 C 470 180, 430 180, 337 138",fill:"none",stroke:"var(--amber)","stroke-width":2}));
+  s.appendChild(el("path",{d:"M 563 92 l -4 -10 l 12 4 Z",fill:"var(--teal)"}));
+  s.appendChild(el("path",{d:"M 337 138 l 4 10 l -12 -4 Z",fill:"var(--amber)"}));
+  s.appendChild(txt(450,66,"share evidence \u2192",{"text-anchor":"middle","font-size":12,fill:"var(--teal)","font-family":"IBM Plex Mono, monospace"}));
+  s.appendChild(txt(450,196,"\u2190 surface urgent questions",{"text-anchor":"middle","font-size":12,fill:"var(--amber)","font-family":"IBM Plex Mono, monospace"}));
+  // captions
+  s.appendChild(txt(255,225,"convenings · listservs · open workspaces",{"text-anchor":"middle","font-size":11.5,fill:"var(--paper-faint)"}));
+  s.appendChild(txt(645,225,"metascience · AI evaluation for research",{"text-anchor":"middle","font-size":11.5,fill:"var(--paper-faint)"}));
+  document.getElementById("fig-forum").appendChild(s);
+})();
+
+/* ----- Fig 5: Precedent timeline ----- */
+(function(){
+  const s=svg("0 0 900 150");
+  s.appendChild(el("line",{x1:60,y1:75,x2:840,y2:75,stroke:"var(--line)","stroke-width":2}));
+  const ev=[
+    {x:140,y:"1975",t:"Asilomar Conference",d:"shaped biotechnology"},
+    {x:450,y:"2010s\u201320s",t:"Reproducibility reckoning",d:"interdisciplinary response"},
+    {x:760,y:"2022",t:"America COMPETES Act",d:"informed by NASEM"}
+  ];
+  ev.forEach((e,i)=>{
+    const up=i%2===0;
+    s.appendChild(el("circle",{cx:e.x,cy:75,r:7,fill:"var(--amber)",stroke:"var(--ink)","stroke-width":2}));
+    const ly=up?40:110;
+    s.appendChild(el("line",{x1:e.x,y1:75,x2:e.x,y2:up?52:98,stroke:"var(--amber)","stroke-width":1,"stroke-dasharray":"3 3"}));
+    s.appendChild(txt(e.x,up?ly-14:ly+2,e.y,{"text-anchor":"middle","font-size":12,fill:"var(--amber)","font-family":"IBM Plex Mono, monospace"}));
+    s.appendChild(txt(e.x,up?ly+4:ly+20,e.t,{"text-anchor":"middle","font-size":14,"font-weight":600,fill:"var(--paper)"}));
+    s.appendChild(txt(e.x,up?ly+21:ly+37,e.d,{"text-anchor":"middle","font-size":11.5,fill:"var(--paper-faint)"}));
+  });
+  document.getElementById("fig-timeline").appendChild(s);
+})();
+
+/* ---------- reveal + counters + bars ---------- */
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    if(!en.isIntersecting)return;
+    en.target.classList.add("in");
+    // bars
+    en.target.querySelectorAll(".bar").forEach(b=>{b.style.width=b.dataset.w+"%";});
+    // counters
+    en.target.querySelectorAll(".big[data-count]").forEach(c=>{
+      const end=+c.dataset.count;let cur=0;const step=Math.max(1,Math.round(end/40));
+      const tick=()=>{cur=Math.min(end,cur+step);c.textContent=cur+"%";if(cur<end)requestAnimationFrame(tick);};
+      tick();
+    });
+    io.unobserve(en.target);
+  });
+},{threshold:.18});
+document.querySelectorAll(".reveal").forEach(r=>io.observe(r));
+</script>
+</body>
+</html>

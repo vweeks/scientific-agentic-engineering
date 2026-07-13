@@ -1,0 +1,640 @@
+/* ======================================================================
+ * NSF NCAR / RAL — Unified brand theme for reveal.js
+ * Override layer applied after the built-in "black" theme.
+ * Palette extracted from theme1.xml of nsf_ncar_ral-slide-template.pptx.
+ *
+ * Dark / light switching via  data-theme="dark|light"  on <html>.
+ * Press  T  during a presentation to toggle (see JS in index.html).
+ * ====================================================================== */
+
+/* ======================================================================
+ * 1. Brand palette  (immutable — never changes between themes)
+ * ====================================================================== */
+
+:root {
+  /* Primary */
+  --ncar-blue: #0057c2;
+  --ncar-dark-blue: #00357a;
+
+  /* Secondary */
+  --ncar-space: #011837;
+  --ncar-light-blue: #42c0ff;
+  --ncar-light-gray: #f1f0ee;
+  --ncar-white: #ffffff;
+
+  /* Accent */
+  --ncar-orange: #faa119;
+  --ncar-yellow: #ffdd31;
+
+  /* Typography */
+  --font-display: "Poppins", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* ======================================================================
+ * 2a. Semantic tokens — dark theme (default)
+ * ====================================================================== */
+
+:root,
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-viewport: var(--ncar-space);
+  --bg-section: var(--ncar-dark-blue);
+
+  /* Body text */
+  --text-primary: var(--ncar-light-gray);
+  --text-h3h4: var(--ncar-light-blue);
+  --text-link: var(--ncar-light-blue);
+  --text-accent: var(--ncar-orange);
+
+  /* Cover slides */
+  --cover-eyebrow: var(--ncar-light-blue);
+
+  /* Table */
+  --table-header: var(--ncar-light-blue);
+  --table-stripe: var(--ncar-light-gray);
+  --text-contrast: var(--ncar-space);
+
+  /* Logo switching (dark bg → white logo, light bg → color logo) */
+  --logo-color-display: none;
+  --logo-white-display: block;
+
+  --wave-bg: url("../assets/images/wave-graphics-ncar-colors/NCAR-Waves_Fills-D-Color-3_RGB.png");
+
+  /* Bolder statement */
+  --statement-lead: var(--ncar-light-blue);
+  --statement-body: var(--ncar-white);
+
+  /* Components */
+  --box-bg: rgba(0, 87, 194, 0.25);
+  --box-border: rgba(66, 192, 255, 0.35);
+  --card-bg: rgba(1, 24, 55, 0.82);
+  --card-border: rgba(66, 192, 255, 0.35);
+  --fragment-note-bg: rgba(66, 192, 255, 0.15);
+  --shadow-code: rgba(0, 0, 0, 0.45);
+}
+
+/* ======================================================================
+ * 2b. Semantic tokens — light theme
+ * ====================================================================== */
+
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg-viewport: var(--ncar-light-gray);
+  --bg-section: var(--ncar-white);
+
+  /* Body text */
+  --text-primary: var(--ncar-dark-blue);
+  --text-h3h4: var(--ncar-blue);
+  --text-link: var(--ncar-blue);
+  --text-accent: var(--ncar-orange);
+
+  /* Cover slides */
+  --cover-eyebrow: var(--ncar-blue);
+
+  /* Table */
+  --table-header: var(--ncar-blue);
+  --table-stripe: var(--ncar-dark-blue);
+  --text-contrast: var(--ncar-light-gray);
+
+  /* Logo switching (light bg → color logo) */
+  --logo-color-display: block;
+  --logo-white-display: none;
+
+  --wave-bg: url("../assets/images/wave-graphics-ncar-colors/NCAR-Waves_Fills-A-White-3_RGB.png");
+
+  /* Bolder statement */
+  --statement-lead: var(--ncar-blue);
+  --statement-body: var(--ncar-dark-blue);
+
+  /* Components */
+  --box-bg: rgba(0, 87, 194, 0.08);
+  --box-border: rgba(0, 87, 194, 0.2);
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --card-border: rgba(0, 87, 194, 0.2);
+  --fragment-note-bg: rgba(0, 87, 194, 0.1);
+  --shadow-code: rgba(0, 0, 0, 0.12);
+}
+
+/* ======================================================================
+ * 3. Utils
+ * ====================================================================== */
+
+.h-separator {
+  margin: 36px 0 36px 0;
+  width: 128px;
+  border-bottom: 4px solid var(--cover-eyebrow);
+}
+
+.v-separator {
+  margin: 0 24px 0 20px;
+  border-left: 4px solid var(--cover-eyebrow);
+}
+
+/* ======================================================================
+ * 4. Reveal base overrides
+ * ====================================================================== */
+
+.reveal {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal .slides section {
+  box-sizing: border-box;
+  height: 100%;
+
+  /* Uncomment to add background boxes behind section */
+  /*
+  background: var(--bg-section);
+  padding: 20px;
+  */
+}
+
+.reveal-viewport,
+.reveal {
+  background: var(--bg-viewport);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  text-transform: none;
+  font-weight: 600;
+}
+
+.reveal h1 {
+  font-weight: 700;
+}
+
+.reveal h3,
+.reveal h4 {
+  color: var(--text-h3h4);
+}
+
+.reveal a {
+  color: var(--text-link);
+}
+
+.reveal ul li::marker {
+  color: var(--ncar-orange);
+}
+
+.reveal .slide-number {
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  text-transform: uppercase;
+}
+
+/* Used in the Reveal initialize slideNumber lambda for 
+displaying the Optional Presentation Name */
+.opt-footer-name {
+  margin-left: 32px;
+  padding-left: 32px;
+  border-left: 4px solid var(--text-primary);
+}
+
+/* ======================================================================
+ * 5. Brand furniture (logo bar)
+ * ====================================================================== */
+
+.brand-bar img {
+  height: 200px;
+  width: auto;
+}
+
+/* Unified slide title bar — used on every non-cover slide.
+   Rendered by the <ncar-title-bar> custom element in assets/js/ncar-components.js. */
+.slide-title-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  z-index: 5;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 3px solid var(--text-primary);
+}
+
+.slide-title-bar h2 {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+.slide-title-bar img {
+  height: 67px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+/* Statement variant — no title, no underline; larger logo, right-aligned. */
+.slide-title-bar--statement {
+  border-bottom: none;
+  padding-bottom: 0;
+  justify-content: flex-end;
+}
+
+.slide-title-bar--statement h2 {
+  display: none;
+}
+
+.slide-title-bar--statement img {
+  height: 88px;
+}
+
+/* Logo switching — shared by the cover brand-bar and the unified title bar */
+.brand-bar .logo-color,
+.slide-title-bar .logo-color {
+  display: var(--logo-color-display);
+}
+
+.brand-bar .logo-white,
+.slide-title-bar .logo-white {
+  display: var(--logo-white-display);
+}
+
+/* Responsive: stack the logo above the title on narrow viewports.
+   column-reverse puts the logo (which follows h2 in DOM order) on top. */
+@media (max-width: 750px) {
+  .slide-title-bar {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}
+
+/* ======================================================================
+ * 6. Layout: Cover slides — shared base
+ * ====================================================================== */
+
+.slide-cover {
+  overflow: hidden;
+}
+
+.slide-cover .eyebrow {
+  color: var(--cover-eyebrow);
+  padding-top: 72px;
+  font-size: 30px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.slide-cover .presenter-block {
+  font-weight: 300;
+}
+
+.slide-cover .presenter-block .name {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.slide-cover .credit-team {
+  margin-top: 36px;
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  font-weight: 100;
+}
+
+.slide-cover .credit-intro {
+  text-transform: uppercase;
+}
+
+.slide-cover .cover-qr {
+  position: absolute;
+  right: 20px;
+  bottom: 120px;
+  width: 360px;
+  text-align: center;
+  z-index: 10;
+}
+
+.slide-cover .cover-qr .cover-qr-bg img {
+  height: 360px;
+  object-fit: contain;
+  display: block;
+}
+
+.slide-cover .cover-qr .cover-qr-url {
+  margin: 8px 0 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+}
+
+.slide-footnote--pinned {
+  opacity: 0.7;
+  font-size: 17px;
+  font-style: italic;
+  font-weight: 100;
+
+  position: absolute;
+  padding-right: 150px;
+  bottom: 2px;
+  line-height: 1.4;
+}
+
+/* ======================================================================
+ * 7. Layout: Content slides
+ * ====================================================================== */
+
+.wave-bg {
+  background-image: var(--wave-bg);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
+.screengrab {
+  max-width: 1800px;
+  margin: 72px;
+}
+
+.subline {
+  text-align: center;
+  margin-top: 24px;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.slide-content h2 .accent {
+  color: var(--text-accent);
+  font-weight: 500;
+}
+
+.slide-content .intro {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+
+/* Two-column and three-column bodies */
+.slide-content.two-col .body,
+.slide-content.three-col .body,
+.slide-content.four-col .body {
+  padding-top: 72px;
+  display: grid;
+  gap: 40px;
+}
+
+.slide-content.two-col .body {
+  grid-template-columns: 1fr 1fr;
+}
+
+.slide-content.three-col .body {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.slide-content.four-col .body {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.slide-content .body p,
+.slide-content .body li {
+  line-height: 1.45;
+}
+
+.slide-content .body h3 {
+  margin: 54px 0 28px 0;
+  border-left: 4px solid var(--ncar-orange);
+  padding-left: 14px;
+  font-weight: 700;
+}
+
+/* Stat / label boxes */
+.stat-boxes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.stat-boxes .box {
+  background: var(--box-bg);
+  border: 1px solid var(--box-border);
+  border-radius: 6px;
+  margin-top: 54px;
+  padding: 24px 28px;
+}
+
+.stat-boxes .box .label {
+  color: var(--text-accent);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 48px;
+}
+
+.stat-boxes .box .value {
+  font-size: 36px;
+}
+
+/* Content + image */
+.slide-content .with-image {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.slide-content .with-image h3 {
+  font-size: 60px;
+  margin-bottom: 28px;
+  border-left: 4px solid var(--ncar-orange);
+  padding-left: 14px;
+  font-weight: 700;
+}
+
+.slide-content .with-image img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.slide-content ul {
+  margin: 0 0 0.4em 1.2em;
+}
+
+.slide-content li {
+  font-size: 40px;
+  line-height: 1.35;
+  margin-bottom: 4px;
+}
+
+/* Table */
+.slide-table table {
+  margin-top: 72px;
+  border: 2px solid var(--ncar-yellow);
+}
+
+.slide-table thead {
+  background-color: var(--table-header);
+  color: var(--text-contrast);
+  border-bottom: 1px solid var(--ncar-orange);
+}
+
+.slide-table th {
+  padding-top: 88px;
+}
+
+.slide-table tr:nth-child(even) {
+  border-bottom: none;
+  background-color: var(--table-stripe);
+  color: var(--text-contrast);
+}
+
+/* ======================================================================
+ * 8. Layout: Bolder statement
+ * ====================================================================== */
+
+.slide-bolder-statement .statement-lead {
+  font-family: var(--font-display);
+  font-size: 124px;
+  line-height: 1.1;
+  font-weight: 700;
+  margin-top: 172px;
+  padding-left: 72px;
+}
+
+/* ======================================================================
+ * 9. Demo / feature slides
+ * ====================================================================== */
+
+.reveal pre {
+  width: 100%;
+  box-shadow: 0 6px 40px var(--shadow-code);
+  border-radius: 6px;
+  margin: 24px 0;
+}
+
+.slide-code .caption {
+  color: var(--text-accent);
+  font-size: 36px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 16px;
+}
+
+.slide-fragments .fragment.highlight-ncar-cyan.visible {
+  color: var(--text-accent);
+}
+
+.slide-fragments .fragment-note {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: var(--fragment-note-bg);
+  color: var(--text-accent);
+  font-family: "JetBrains Mono", Menlo, monospace;
+}
+
+.auto-animate-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 40px;
+}
+
+.auto-animate-stack .chip {
+  display: inline-block;
+  padding: 14px 24px;
+  background: var(--ncar-blue);
+  color: var(--ncar-white);
+  border-radius: 6px;
+  font-size: 44px;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.auto-animate-stack .chip.accent {
+  background: var(--ncar-orange);
+  color: var(--ncar-space);
+}
+.auto-animate-stack .chip.light-blue {
+  background: var(--ncar-light-blue);
+}
+.auto-animate-stack .chip.dark-blue {
+  background: var(--ncar-dark-blue);
+}
+
+.slide-transition-demo .label {
+  display: inline-block;
+  margin-top: 32px;
+  padding: 10px 20px;
+  border: 1px solid var(--text-accent);
+  border-radius: 4px;
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 36px;
+  color: var(--text-accent);
+  letter-spacing: 0.08em;
+}
+
+.slide-iframe-bg {
+  background: transparent;
+}
+
+.slide-iframe-bg .card {
+  display: inline-block;
+  max-width: 1000px;
+  padding: 40px 48px;
+  background: var(--card-bg);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+}
+
+.slide-iframe-bg h2 {
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.slide-iframe-bg p {
+  font-size: 47px;
+}
+
+/* Caption overlay for the live before/after iframe demos
+   (vertical sub-slides under "Stop reading walls of text").
+   Pinned bottom-left so the live page fills the slide. */
+.slide-iframe-bg .demo-caption {
+  position: absolute;
+  left: 40px;
+  bottom: 40px;
+  z-index: 10;
+  max-width: 1180px;
+  padding: 24px 32px;
+  background: var(--card-bg);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+}
+
+/* More specific than `.slide-iframe-bg p` above, so it wins the 47px rule. */
+.slide-iframe-bg .demo-caption p {
+  font-size: 34px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.slide-iframe-bg .demo-caption .demo-tag {
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-accent);
+  margin-bottom: 8px;
+}

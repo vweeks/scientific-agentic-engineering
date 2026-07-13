@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const decks = [
+  {
+    slug: 'ai-tools-daily-practice',
+    title: 'AI Tools in Daily Practice',
+    venue: 'NSF NCAR Lunch & Learn · June 16, 2026',
+    description:
+      'A practitioner’s tour of AI-assisted development for scientific work: where the tools ' +
+      'genuinely help, where they fail quietly, and the validation habits that keep scientific ' +
+      'rigor in the loop.',
+  },
+  {
+    slug: 'reproducible-ai-science',
+    title: 'Before We Reproduce AI-Assisted Science, We Need to Make It Reproducible',
+    venue: 'Talk · 2026',
+    description:
+      'Why reproducibility has to be designed into AI-assisted scientific software from the ' +
+      'start — provenance, validation loops, and human oversight as first-class practices.',
+  },
+];
+---
+
+<BaseLayout
+  title="Resources — Scientific Agentic Engineering"
+  description="Talks, slide decks, and project links from the Scientific Agentic Engineering fellowship."
+>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900">Resources</h1>
+
+    <p class="mt-4 text-gray-600 leading-relaxed">
+      Initial resources from the fellowship. More arrive with each milestone —
+      the Reference Workflow exercise and Community Repository (October 2026),
+      the tutorial series (January 2027), and workshop recordings (April 2027).
+    </p>
+
+    <h2 class="mt-10 text-xl font-semibold text-gray-900">Talks &amp; slide decks</h2>
+
+    <p class="mt-2 text-sm text-gray-500">
+      Decks open as live, self-contained presentations (reveal.js, no external
+      dependencies). Navigate with the arrow keys; press
+      <kbd class="px-1 py-0.5 text-xs border border-gray-300 rounded">F</kbd> for fullscreen.
+    </p>
+
+    <div class="mt-6 space-y-6">
+      {decks.map(({ slug, title, venue, description }) => (
+        <div class="border border-gray-200 rounded-lg p-6 hover:border-blue-300 transition-colors">
+          <h3 class="text-lg font-semibold text-gray-900">
+            <a href={`${base}decks/${slug}/`} target="_blank" rel="noopener" class="hover:text-blue-600">
+              {title}
+            </a>
+          </h3>
+          <p class="mt-1 text-sm text-gray-500">{venue}</p>
+          <p class="mt-3 text-gray-600 leading-relaxed">{description}</p>
+          <p class="mt-4">
+            <a
+              href={`${base}decks/${slug}/`}
+              target="_blank"
+              rel="noopener"
+              class="text-sm font-medium text-blue-600 hover:underline"
+            >
+              Open deck &rarr;
+            </a>
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Project &amp; community links</h2>
+
+    <ul class="mt-4 space-y-2 text-gray-600">
+      <li>
+        <a href="https://github.com/vweeks/scientific-agentic-engineering" class="text-blue-600 hover:underline">
+          Project repository on GitHub
+        </a>
+        — source for this site and, as milestones land, the framework documents.
+      </li>
+      <li>
+        <a href="https://bssw.io/fellows/victor-weeks" class="text-blue-600 hover:underline">
+          BSSw Fellowship profile
+        </a>
+        — the fellowship behind this project.
+      </li>
+      <li>
+        <a href="https://bssw.io" class="text-blue-600 hover:underline">
+          Better Scientific Software (BSSw.io)
+        </a>
+        — community hub for scientific software practices.
+      </li>
+    </ul>
+  </div>
+</BaseLayout>

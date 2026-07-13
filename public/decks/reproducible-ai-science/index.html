@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>
+      Before We Reproduce AI-Assisted Science, We Need to Make It Reproducible
+    </title>
+
+    <!-- Reveal.js core + base theme from jsDelivr -->
+    <link
+      rel="stylesheet"
+      href="vendor/reveal.js/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="vendor/reveal.js/dist/theme/black.css"
+      id="theme"
+    />
+
+    <!-- Poppins from Google Fonts -->
+    <link rel="stylesheet" href="vendor/fonts/poppins.css" />
+
+    <!-- NCAR brand overrides (load last so they win) -->
+    <link rel="stylesheet" href="css/ncar-theme.css" />
+
+    <!-- NCAR custom elements (<ncar-title-bar>) -->
+    <script src="assets/js/ncar-components.js" defer></script>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ============================================================ -->
+        <!-- 1. TITLE / COVER                                             -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-cover"
+          data-transition="fade"
+          data-background-image="assets/images/photo-cover.jpg"
+          data-background-opacity="0.45"
+        >
+          <div class="brand-bar">
+            <img
+              class="logo-color"
+              src="assets/images/ncar-ral-stack-color.png"
+              alt="NCAR RAL"
+            />
+            <img
+              class="logo-white"
+              src="assets/images/ncar-ral-stack-white.png"
+              alt="NCAR RAL"
+            />
+          </div>
+          <div class="slide-cover contents">
+            <p class="eyebrow">April 16, 2026</p>
+            <h1>
+              Before We Reproduce AI-Assisted Science, We Need to Make It
+              Reproducible
+            </h1>
+            <p class="subhead">
+              6th Chameleon User Meeting | Applying AI to Accelerate
+              Computational R&amp;R
+            </p>
+
+            <div class="presenter-block">
+              <div class="name">Victor Weeks</div>
+              <div class="title">
+                Software Engineer, NSF NCAR | 2026 BSSw Fellow
+              </div>
+            </div>
+
+            <p class="slide-footnote slide-footnote--pinned">
+              This material is based upon work supported by the NSF National
+              Center for Atmospheric Research, a major facility sponsored by the
+              U.S. National Science Foundation and managed by the University
+              Corporation for Atmospheric Research. This work is also supported
+              by the Better Scientific Software Fellowship Program, funded by
+              the U.S. Department of Energy and National Science Foundation.
+            </p>
+          </div>
+
+          <aside class="notes">
+            TALKING POINTS (~1 min): - Introduce yourself: Victor Weeks,
+            software engineer at NCAR, 2026 BSSw Fellow. - Frame the talk: We've
+            been discussing how AI can help with computational reproducibility.
+            I want to raise a complementary question — what happens when AI is
+            building the computational artifacts we're trying to reproduce? -
+            Transition: Let me set the stage.
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 2. TWO SIDES OF THE SAME COIN                                -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content two-col"
+          data-transition="slide"
+          data-background-image="assets/images/behind_Derecho.jpg"
+          data-background-opacity="0.12"
+        >
+          <ncar-title-bar title="Two Sides of the Same Coin"></ncar-title-bar>
+
+          <div class="body">
+            <div>
+              <h3>AI to Reproduce Computational Artifacts</h3>
+              <ul>
+                <li>Reconstruct software environments</li>
+                <li>Resolve dependency conflicts</li>
+                <li>Navigate platform-specific quirks</li>
+                <li>Automate artifact evaluation</li>
+              </ul>
+            </div>
+            <div class="fragment fade-in">
+              <h3>AI to Build Computational Artifacts</h3>
+              <ul>
+                <li>Write scientific software</li>
+                <li>Configure computational experiments</li>
+                <li>Make architectural decisions</li>
+                <li>Generate analysis pipelines</li>
+              </ul>
+            </div>
+          </div>
+
+          <aside class="notes">
+            TALKING POINTS (~1.5 min): - This symposium is exploring the left
+            side — how can AI help us reproduce computational artifacts? That's
+            a great direction. - But there's a parallel trend: AI is
+            increasingly being used on the build side too. - These are two sides
+            of the same coin. If we don't get the build side right, we're
+            producing artifacts that are harder to describe, evaluate, and
+            reproduce — making the AD/AE process even more challenging. -
+            Transition: What does 'not getting it right' look like?
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 3. THE AI-ASSISTED DEVELOPMENT SPECTRUM                      -->
+        <!-- ============================================================ -->
+        <section class="slide-content three-col" data-transition="slide">
+          <div class="waves-bg"></div>
+
+          <ncar-title-bar
+            title="The AI-Assisted Development Spectrum"
+          ></ncar-title-bar>
+
+          <div class="body">
+            <div class="fragment fade-up">
+              <h3>&ldquo;Vibe Coding&rdquo;</h3>
+              <p>
+                Conversational AI assists with code generation and refactoring
+              </p>
+            </div>
+            <div class="fragment fade-up">
+              <h3>MCP &amp; Tools</h3>
+              <p>
+                Agents access external tools, APIs, and platform infrastructure
+              </p>
+            </div>
+            <div class="fragment fade-up">
+              <h3>Autonomous Agents</h3>
+              <p>
+                AI makes multi-step decisions, configures systems, and executes
+                workflows
+              </p>
+            </div>
+          </div>
+
+          <aside class="notes">
+            TALKING POINTS (~1 min): - Quick tour of where AI-assisted dev is
+            today. - 'Vibe coding' — conversational, developer in the loop. -
+            MCP and tool use — agents interacting with external systems.
+            Chameleon already has an MCP server — a great example of this
+            pattern. - Autonomous agents — multi-step decisions with less human
+            oversight. - Each step increases potential for undetected errors in
+            artifacts. - Transition: What kinds of errors?
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 4. WHEN AI BUILDS SCIENTIFIC SOFTWARE                        -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content slide-with-image"
+          data-transition="slide-in fade-out"
+        >
+          <ncar-title-bar
+            title="When AI Builds Scientific Software"
+          ></ncar-title-bar>
+
+          <div class="with-image">
+            <div>
+              <p class="intro">
+                Failure modes distinct from standard software bugs:
+              </p>
+
+              <div class="stat-boxes">
+                <div class="box">
+                  <span class="label">Numerical Precision Errors</span>
+                  <span class="value">
+                    AI agents may introduce floating-point assumptions that
+                    silently degrade accuracy in physical simulations
+                  </span>
+                </div>
+                <div class="box">
+                  <span class="label">Subtle Physics Violations</span>
+                  <span class="value">
+                    Generated code can violate conservation laws or domain
+                    constraints not captured by standard test suites
+                  </span>
+                </div>
+                <div class="box">
+                  <span class="label">Opaque Decision Histories</span>
+                  <span class="value">
+                    When an agent makes architectural choices, the rationale may
+                    not be recorded — making the artifact harder to describe and
+                    evaluate
+                  </span>
+                </div>
+              </div>
+            </div>
+            <img
+              src="assets/images/hurricane-satellite.jpg"
+              alt="Satellite image of hurricane — atmospheric science"
+            />
+          </div>
+
+          <aside class="notes">
+            TALKING POINTS (~1.5 min): - These aren't hypothetical — they're
+            things I've encountered at NCAR. - Precision: float32 vs float64,
+            rounding that accumulates over simulations. - Physics: code that
+            doesn't conserve mass/energy/momentum and passes tests. - Opaque
+            decisions: commit history and PR reviews capture 'why' for human
+            code; agent decisions can evaporate. - Key: These pass CI/CD but
+            corrupt the science — and complicate artifact evaluation. -
+            Transition: What do we do about it?
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 5. SCIENTIFIC AGENTIC ENGINEERING (SAE)                      -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content three-col"
+          data-transition="convex"
+          data-background-image="assets/images/mammatus-clouds.jpg"
+          data-background-opacity="0.10"
+        >
+          <ncar-title-bar
+            title="Scientific Agentic Engineering (SAE)"
+          ></ncar-title-bar>
+
+          <div class="body">
+            <div class="fragment fade-up">
+              <h3>Validation Loops</h3>
+              <p>
+                Domain-specific checks integrated into agent workflows — not
+                just at the end, but at each decision point
+              </p>
+            </div>
+            <div class="fragment fade-up">
+              <h3>Human Oversight</h3>
+              <p>
+                Defined points where humans review agent decisions, especially
+                for choices with scientific implications
+              </p>
+            </div>
+            <div class="fragment fade-up">
+              <h3>Standardized Tooling</h3>
+              <p>
+                Reusable MCP server templates, scientific skills, and agent
+                configurations that encode domain knowledge
+              </p>
+            </div>
+          </div>
+
+          <aside class="notes">
+            TALKING POINTS (~1.5 min): - My BSSw Fellowship is developing a
+            methodology I'm calling Scientific Agentic Engineering, or SAE. -
+            Three pillars: validation loops, human oversight, standardized
+            tooling. - SAE is tool-agnostic — about principles, not any specific
+            AI product. - Fellowship just started — framework design phase.
+            Deliverables over the next 12 months. - Transition: Why does this
+            matter for this audience?
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 6. WHY BUILD-TIME DISCIPLINE MATTERS FOR R&R                 -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content"
+          data-transition="fade"
+          data-background-image="assets/images/MPAS-image.png"
+          data-background-opacity="0.15"
+        >
+          <ncar-title-bar
+            title="Why Build-Time Discipline Matters for"
+            accent="R&amp;R"
+          ></ncar-title-bar>
+
+          <p class="fragment fade-in">
+            If AI agents build computational artifacts without guardrails, those
+            artifacts become harder to describe in an Artifact Description and
+            harder to validate in an Artifact Evaluation.
+          </p>
+          <p class="fragment fade-in">
+            On the reproduce side, AI agents reconstructing environments and
+            running evaluations also need the same kinds of guardrails —
+            validation that the reconstructed environment actually matches,
+            domain-aware checks on whether the reproduction is scientifically
+            valid.
+          </p>
+          <p class="fragment fade-in">
+            The same structural patterns that SAE defines — validation loops,
+            domain-specific safeguards, and standardized tooling — serve both
+            sides of this coin.
+          </p>
+          <p class="fragment fade-in" style="font-weight: 600">
+            <span class="accent">
+              Build-time discipline is upstream of reproduce-time reliability.
+            </span>
+          </p>
+
+          <aside class="notes">
+            TALKING POINTS (~1 min): - Connection to today's discussions. -
+            Undisciplined build-side produces artifacts harder for AD/AE. -
+            Reproduce-side AI agents also need guardrails. - Same structural
+            patterns serve both sides. - Build-time discipline is upstream of
+            reproduce-time reliability. - Transition: Closing.
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 7. SECTION DIVIDER — penultimate (agent screenshot + zoom)   -->
+        <!--    Alt+click (or Ctrl+click on Linux) to zoom into image     -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content"
+          data-transition="fade"
+          data-background-transition="zoom"
+          data-background-image="assets/images/wave-graphics-ncar-colors/NCAR-Waves_Fills-D-Color-3_RGB.png"
+          data-background-opacity="0.25"
+        >
+          <ncar-title-bar
+            title="Scientific Agentic Engineering Example"
+          ></ncar-title-bar>
+
+          <div>
+            <img
+              src="assets/images/agent-team-screenshot.jpg"
+              data-preview-image
+              alt="Multi-agent AI workflow — scientific agentic engineering in action"
+            />
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 8. FOLLOW THE PROJECT — closing                              -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content"
+          data-transition="fade"
+          data-background-image="assets/images/4G4A1413-Pano.JPG"
+          data-background-opacity="0.15"
+        >
+          <ncar-title-bar title="Follow the Project"></ncar-title-bar>
+
+          <p class="intro">Scientific Agentic Engineering (SAE)</p>
+
+          <div class="with-image">
+            <div>
+              <ul>
+                <li>Framework &amp; methodology</li>
+                <li>Community repository of scientific MCP templates</li>
+                <li>Reference workflow &amp; tutorials</li>
+                <li>Workshops</li>
+              </ul>
+              <p style="margin-top: 24px">
+                All coming over the next 12 months.
+              </p>
+              <p style="margin-top: 32px; font-size: 28px; font-weight: 600">
+                <a
+                  href="https://vweeks.github.io/scientific-agentic-engineering"
+                  style="color: var(--text-link)"
+                >
+                  vweeks.github.io/scientific-agentic-engineering
+                </a>
+              </p>
+            </div>
+            <img
+              src="assets/images/sae-qr-code.png"
+              alt="QR code — vweeks.github.io/scientific-agentic-engineering"
+              style="max-height: 400px; object-fit: contain"
+            />
+          </div>
+
+          <aside class="notes">
+            TALKING POINTS (~30 sec): - Fellowship just kicked off. All
+            deliverables coming over the next 12 months. - If interested —
+            especially from R&R/AE perspective — project site will have
+            resources. - Interested in feedback on what guardrails would be most
+            valuable for AD/AE. - Thank you. Happy to take questions.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <!-- reveal.js core -->
+    <script src="vendor/reveal.js/dist/reveal.js"></script>
+    <!-- Plugins -->
+    <script src="vendor/reveal.js/dist/plugin/notes.js"></script>
+
+    <script>
+      Reveal.initialize({
+        hash: true,
+        width: 2160, // 3840 | 1920
+        height: 1200, // 2160 | 1080
+        center: true,
+        margin: 0.08,
+        minScale: 0.2,
+        maxScale: 2.0,
+        //slideNumber: "h.v",
+        slideNumber: (slide) => {
+          let indices = Reveal.getIndices(slide);
+          if (indices.h === 0) return [""];
+
+          let sep = ".";
+          let presName = ""; // set e.g. "Chameleon Mini-Symposium" for a footer label
+
+          let value = [];
+
+          let horizontalOffset =
+            slide && slide.dataset.visibility === "uncounted" ? 0 : 1;
+          value.push(indices.h + horizontalOffset);
+
+          if (this.Reveal.isVerticalSlide(slide))
+            value.push(sep, indices.v + 1);
+
+          if (presName === "") return value;
+
+          if (Reveal.isVerticalSlide(slide)) {
+            return [
+              `<a>
+                <span>${value[0]}</span>
+                <span>${sep}</span>
+                <span>${indices.v + 1}</span>
+                <span class="opt-footer-name">${presName}</span>
+              </a>`,
+            ];
+          } else {
+            return [
+              `<a>
+                <span class="slide-number-a">${value[0]}</span>
+                <span class="opt-footer-name">${presName}</span>
+              </a>`,
+            ];
+          }
+        },
+        //showSlideNumber: "speaker",
+        controls: true,
+        progress: true,
+        transition: "slide",
+        backgroundTransition: "fade",
+        plugins: [RevealNotes],
+      });
+
+      // Theme toggle: press T to switch dark ↔ light
+      {
+        const html = document.documentElement;
+        const saved = localStorage.getItem("ncar-theme");
+        if (saved) html.setAttribute("data-theme", saved);
+
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "t" &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            document.activeElement.tagName !== "INPUT"
+          ) {
+            const next =
+              html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+            html.setAttribute("data-theme", next);
+            localStorage.setItem("ncar-theme", next);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

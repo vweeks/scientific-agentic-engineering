@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Reference Workflow — Scientific Agentic Engineering"
+  description="Scope of the Reference Workflow: a structured exercise applying the Scientific Agentic Engineering framework to build a weather-model error-statistics application."
+>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <p class="text-sm font-medium text-blue-600 uppercase tracking-wide">Milestone 1 · Scope</p>
+    <h1 class="mt-2 text-3xl font-bold text-gray-900">The Reference Workflow</h1>
+
+    <div class="mt-8 space-y-6 text-gray-600 leading-relaxed">
+      <p>
+        <strong class="text-gray-900">The Reference Workflow</strong> is a structured half-day
+        exercise in which you use the AI tooling of your choice to build a small weather-model
+        error-statistics application — parsing MET-style verification output, computing and
+        converting skill statistics, and visualizing model performance — while applying the
+        Scientific Agentic Engineering framework&rsquo;s full loop:
+        <em>frame &rarr; plan &rarr; critique &rarr; implement &rarr; verify &rarr; gate &rarr; record</em>.
+      </p>
+
+      <p>
+        Each stage pairs your build with a deliberately flawed reference implementation embodying
+        <em>real, documented</em> failure modes from actual AI-assisted development — unit
+        confusion, precision loss, misleading aggregation, visualization misinterpretation — so
+        you practice catching them with the framework&rsquo;s tools: validation loops, unit
+        checkers, fresh-context adversarial review, and human gates, with a self-grading oracle
+        to prove it.
+      </p>
+
+      <div class="border-l-4 border-blue-200 bg-blue-50 rounded-r-lg px-5 py-4 text-sm text-gray-600">
+        Planned to ship with a synthetic, schema-faithful dataset (clearly labeled, generator and
+        seed included) and validators from the SAE Community Repository. Releases
+        <strong class="text-gray-900">October 2026</strong> (Milestone&nbsp;2); details may evolve
+        with pilot results and community feedback at US-RSE&rsquo;26.
+      </div>
+
+      <h2 class="text-xl font-semibold text-gray-900 pt-4">How it fits the project</h2>
+
+      <ul class="list-disc pl-5 space-y-2">
+        <li>
+          <strong class="text-gray-900">Milestone 1</strong> (July 2026) — this scope, alongside
+          the framework draft.
+        </li>
+        <li>
+          <strong class="text-gray-900">Milestone 2</strong> (October 2026) — the exercise
+          releases, together with the Community Repository whose validators it uses.
+        </li>
+        <li>
+          <strong class="text-gray-900">Milestone 3</strong> (January 2027) — the tutorial series
+          <em>Building Your First Scientific Agent</em> guides participants through a validated
+          agentic solution to this same workflow.
+        </li>
+      </ul>
+    </div>
+  </div>
+</BaseLayout>

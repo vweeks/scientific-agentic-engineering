@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>
+      AI Tools in Daily Practice — Victor Weeks · Lunch &amp; Learn,
+      June 16, 2026
+    </title>
+
+    <!-- Reveal.js core + base theme from jsDelivr -->
+    <link
+      rel="stylesheet"
+      href="vendor/reveal.js/dist/reveal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="vendor/reveal.js/dist/theme/black.css"
+      id="theme"
+    />
+
+    <!-- Poppins + JetBrains Mono from Google Fonts -->
+    <link rel="stylesheet" href="vendor/fonts/poppins.css" />
+
+    <!-- NCAR brand overrides (load last) -->
+    <link rel="stylesheet" href="css/ncar-theme.css" />
+
+    <!-- NCAR custom elements (<ncar-title-bar>) -->
+    <script src="assets/js/ncar-components.js" defer></script>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ============================================================ -->
+        <!-- 1. COVER — panel title slide                                 -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-cover"
+          data-transition="fade"
+          data-background-image="assets/images/photo-cover.jpg"
+          data-background-opacity="0.45"
+        >
+          <div class="brand-bar">
+            <img
+              class="logo-color"
+              src="assets/images/ncar-ral-stack-color.png"
+              alt="NCAR RAL"
+            />
+            <img
+              class="logo-white"
+              src="assets/images/ncar-ral-stack-white.png"
+              alt="NCAR RAL"
+            />
+          </div>
+          <div class="slide-cover contents">
+            <p class="eyebrow">June 16, 2026 | Lunch &amp; Learn — AI Tools Panel</p>
+            <h1>AI Tools in Daily Practice</h1>
+            <h2 class="subhead">What I use, how it helps, and what to avoid</h2>
+
+            <div class="h-separator"></div>
+
+            <div class="presenter-block">
+              <div class="name">Victor Weeks</div>
+              <div class="title">
+                Software Engineer, NSF NCAR
+                <span class="v-separator"></span> 2026 BSSw Fellow
+              </div>
+            </div>
+
+            <p class="slide-footnote slide-footnote--pinned">
+              This material is based upon work supported by the NSF National
+              Center for Atmospheric Research, a major facility sponsored by the
+              U.S. National Science Foundation and managed by the University
+              Corporation for Atmospheric Research.
+            </p>
+          </div>
+
+          <aside class="notes">
+            <h2>Cover (~20s)</h2>
+            <p><strong>[ON ARRIVAL]</strong></p>
+            <p>
+              "Hi, I'm Victor Weeks — a software engineer at NCAR's Research
+              Applications Lab and a 2026 Better Scientific Software Fellow."
+            </p>
+            <p>
+              "In my few minutes I'll cover the AI tools I actually use, how
+              they've helped, the challenges I've hit, and a mistake you can
+              skip."
+            </p>
+            <p><em>→ SPACE: who I am.</em></p>
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 2. WHO I AM — vantage point on AI tools                      -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content two-col"
+          data-background-image="assets/images/wave-graphics-ncar-colors/vert/NCAR-Waves_Lines-Only-3_RGB.png"
+          data-background-opacity="0.5"
+          data-background-size="contain"
+          data-background-position="right"
+          data-background-transition="convex"
+          data-transition="convex"
+        >
+          <ncar-title-bar title="Who I am"></ncar-title-bar>
+
+          <div class="body">
+            <div>
+              <h3>Where I sit</h3>
+              <p class="intro">
+                Software engineer at <strong>NSF NCAR</strong>'s RAL.
+              </p>
+              <ul>
+                <li>I build software for atmospheric science</li>
+                <li>I use AI-assisted development every day</li>
+              </ul>
+            </div>
+            <div class="fragment fade-in">
+              <h3>Where I'm coming from</h3>
+              <p class="intro">Daily practice, not theory.</p>
+              <ul>
+                <li>Plenty of wins — and an honest pile of scrapped attempts</li>
+                <li>Here to share what's worked, and what I'd skip</li>
+              </ul>
+            </div>
+          </div>
+
+          <aside class="notes">
+            <h2>Who I am (~25s)</h2>
+            <p><strong>[ON ARRIVAL — left column]</strong></p>
+            <p>
+              "You all know me and the work I do here, so I'll keep it short:
+              I'm an engineer at RAL, and I use AI-assisted development every
+              day."
+            </p>
+            <p><strong>[CLICK — right column]</strong></p>
+            <p>
+              "This is from daily practice, not theory — plenty of wins, and an
+              honest pile of scrapped attempts. I'll share what's worked, and
+              what I'd skip."
+            </p>
+            <p><em>→ SPACE: what I use.</em></p>
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 3. WHAT I USE — tools + wins                                 -->
+        <!--    Vertical sub-slide: Autonomy vs. control                 -->
+        <!-- ============================================================ -->
+        <section>
+          <section
+            class="slide-content two-col"
+            data-transition="slide"
+            data-background-image="assets/images/Aurora-in-Sweden_CAESAR.jpg"
+            data-background-opacity="0.15"
+          >
+            <ncar-title-bar
+              title="What I use — and where it shines"
+            ></ncar-title-bar>
+
+            <p class="intro">A small toolkit, used constantly.</p>
+
+            <div
+              class="auto-animate-stack"
+              style="flex-direction: row; gap: 16px; margin-top: 16px"
+            >
+              <div class="chip accent">Claude Code</div>
+              <div class="chip light-blue fragment fade-in">Claude Design</div>
+            </div>
+
+            <div class="body" style="padding-top: 48px">
+              <div class="fragment fade-in">
+                <h3>Tech-stack discovery</h3>
+                <ul>
+                  <li>Surface modern components suited to the problem</li>
+                  <li>Far less reinventing the wheel</li>
+                  <li>Discover, compare, contrast — remarkably fast</li>
+                </ul>
+              </div>
+              <div class="fragment fade-in">
+                <h3>Building with unfamiliar tech</h3>
+                <ul>
+                  <li>Stand up tools I've never used before</li>
+                  <li>Learn by doing, not docs-first</li>
+                  <li>From idea to working prototype in a day</li>
+                </ul>
+              </div>
+            </div>
+
+            <aside class="notes">
+              <h2>What I use (~70s)</h2>
+              <p><strong>[ON ARRIVAL — Claude Code chip]</strong></p>
+              <p>
+                "My primary tool for AI-Augmented Engineering is Claude Code."
+              </p>
+              <p><strong>[CLICK — Claude Design chip]</strong></p>
+              <p>
+                "I reach for Claude Design when I want more powerful UI
+                development iteration."
+              </p>
+              <p><strong>[CLICK — win 1: tech-stack discovery]</strong></p>
+              <p>
+                "Where it's helped most is tech-stack discovery. I can weigh a
+                range of modern components for whatever I'm building — and
+                reinvent the wheel a lot less. Discovering, then comparing and
+                contrasting tools and methods, is remarkably fast."
+              </p>
+              <p><strong>[CLICK — win 2: unfamiliar tech]</strong></p>
+              <p>
+                "A second win: I can build with tech I've never used before —
+                learning by doing instead of reading docs first, and reaching a
+                working prototype the same day."
+              </p>
+              <p><em>↓ DOWN: how I keep it controlled.</em></p>
+            </aside>
+          </section>
+
+          <section
+            class="slide-content two-col"
+            data-transition="slide"
+            data-background-image="assets/images/MPAS-image.png"
+            data-background-opacity="0.15"
+          >
+            <ncar-title-bar title="Autonomy vs. control"></ncar-title-bar>
+
+            <div class="body">
+              <div>
+                <h3>Autonomous hand-off</h3>
+                <p class="intro">Acts broadly, on its own.</p>
+                <ul>
+                  <li>"Cowork"-style, long-running</li>
+                  <li>Few checkpoints before it acts</li>
+                  <li>Most convenient — highest risk</li>
+                </ul>
+              </div>
+              <div class="fragment fade-in">
+                <h3>Guard-railed session</h3>
+                <p class="intro">How I actually work.</p>
+                <ul>
+                  <li>A session I drive, launching scoped sub-agents</li>
+                  <li>Sandboxed &amp; kept local</li>
+                  <li>Human approval on decisions that matter</li>
+                  <li>Official <code>security-guidance</code> plugin</li>
+                </ul>
+              </div>
+            </div>
+
+            <div
+              class="h-separator fragment fade-in"
+              style="margin: 28px auto 0"
+            ></div>
+
+            <p
+              class="fragment fade-in"
+              style="text-align: center; margin-top: 20px"
+            >
+              Often the concern is less about "AI agents" and more about
+              <span class="accent"
+                ><strong>how much autonomy goes unchecked</strong></span
+              >.
+            </p>
+
+            <aside class="notes">
+              <h2>Autonomy vs. control (~60s) — vertical under "What I use"</h2>
+              <p><strong>[ON ARRIVAL — left column]</strong></p>
+              <p>
+                "One important distinction, because 'agent' means very different
+                things. On one end: autonomous hand-off — Cowork-style agents
+                that run broadly on their own, with few checkpoints. Most
+                convenient, and the highest risk."
+              </p>
+              <p><strong>[CLICK — right column]</strong></p>
+              <p>
+                "That's not how I work. I drive an interactive session that
+                launches scoped sub-agents for narrow tasks — sandboxed, kept
+                local, with me approving the decisions that matter. I also run
+                the official security-guidance plugin."
+              </p>
+              <p><strong>[CLICK — separator → bottom line]</strong></p>
+              <p>
+                "So a lot of the concern is less about 'AI agents' as a category
+                and more about how much autonomy goes unchecked. Match the leash
+                to the stakes."
+              </p>
+              <p><em>→ SPACE: challenges.</em></p>
+            </aside>
+          </section>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 4. CHALLENGES — context bloat + over-trust                  -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content two-col"
+          data-transition="convex"
+          data-background-image="assets/images/behind_Derecho.jpg"
+          data-background-opacity="0.10"
+        >
+          <ncar-title-bar title="Challenges I've hit"></ncar-title-bar>
+
+          <div class="body">
+            <div>
+              <h3>Context bloat</h3>
+              <p class="intro">More context isn't more signal.</p>
+              <ul>
+                <li>Long sessions drift as the window fills</li>
+                <li>Key details get buried; quality slips</li>
+                <li>Scope tightly and reset deliberately</li>
+              </ul>
+            </div>
+            <div class="fragment fade-in">
+              <h3>Over-trust</h3>
+              <p class="intro">Fluent ≠ correct.</p>
+              <ul>
+                <li>Confident output that's quietly wrong</li>
+                <li>The real work shifts to verification</li>
+                <li>Trust, but always check</li>
+              </ul>
+            </div>
+          </div>
+
+          <aside class="notes">
+            <h2>Challenges (~50s)</h2>
+            <p><strong>[ON ARRIVAL — context bloat]</strong></p>
+            <p>
+              "Two honest challenges. First, context bloat — as a session fills
+              up, the agent loses the thread and output quality drifts. I scope
+              tightly and start fresh sooner than feels natural."
+            </p>
+            <p><strong>[CLICK — over-trust]</strong></p>
+            <p>
+              "Second, over-trust. The output is fluent, which makes it easy to
+              accept — but fluent isn't correct. A confident answer can be
+              quietly wrong, so the real work shifts to verification. Trust, but
+              always check."
+            </p>
+            <p><em>→ SPACE: a tip worth stealing.</em></p>
+          </aside>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 5. MISTAKE TO AVOID — stop reading walls of text            -->
+        <!--    Horizontal slide = the statement (top) + two vertical     -->
+        <!--    demo sub-slides, a live before/after example:             -->
+        <!--      5.1  the source article (PDF) — the "wall of text"      -->
+        <!--      5.2  the HTML artifact derived from it                  -->
+        <!--    The parent <section> has no attrs; its children are the   -->
+        <!--    real slides. Indentation is kept flat; nesting is in the  -->
+        <!--    tag structure + these comments.                           -->
+        <!-- ============================================================ -->
+        <section>
+        <!-- 5 (top) — the statement -->
+        <section
+          class="slide-bolder-statement"
+          data-background-image="assets/images/wave-graphics-ncar-colors/NCAR-Waves_Fills-D-Color-3_RGB.png"
+          data-background-opacity="0.30"
+          data-background-size="cover"
+          data-transition="convex"
+        >
+          <ncar-title-bar variant="statement" title=""></ncar-title-bar>
+          <div style="text-align: center">
+            <p
+              class="statement-lead"
+              style="text-align: center; padding-left: 0; margin-top: 0"
+            >
+              Stop reading <span class="accent">walls of text</span>.
+            </p>
+            <ul
+              style="
+                display: inline-block;
+                text-align: left;
+                list-style: disc;
+                margin: 56px auto 0;
+                padding-left: 48px;
+                max-width: 1800px;
+                font-size: 44px;
+                line-height: 1.4;
+              "
+            >
+              <li class="fragment fade-in" style="margin-bottom: 24px">
+                For research, discovery, or "what does this repo do?" — ask for
+                an <strong>HTML artifact, with SVG diagrams,</strong> instead.
+              </li>
+              <li class="fragment fade-in" style="margin-bottom: 24px">
+                Make it interactive: click an element to request a change — and
+                have it <strong>provide a way to export your edits</strong>
+                (e.g., as JSON) for your next prompt.
+              </li>
+              <li class="fragment fade-in">
+                A real time-saver — this very deck is one.
+              </li>
+            </ul>
+          </div>
+
+          <aside class="notes">
+            <h2>Mistake to avoid (~70s)</h2>
+            <p><strong>[ON ARRIVAL — statement]</strong></p>
+            <p>
+              "If you take one tip: stop reading walls of text. Especially for
+              research and discovery, or when you just want to know what a repo
+              does —"
+            </p>
+            <p><strong>[CLICK — artifact]</strong></p>
+            <p>
+              "— ask it to output an HTML artifact instead — with SVG diagrams,
+              not paragraphs. You can even make it interactive: wrap it so you
+              click a specific element to ask for clarification or changes, and
+              have it provide a way to export your edits — say, as JSON — to drop
+              straight into your next prompt."
+            </p>
+            <p><strong>[CLICK — payoff]</strong></p>
+            <p>
+              "It saves a ton of time — making presentations is one example.
+              This deck itself is an artifact."
+            </p>
+            <p><em>↓ DOWN: a real before/after example.</em></p>
+          </aside>
+        </section>
+
+        <!-- 5.1 (down) — BEFORE: the source article as a live PDF -->
+        <section
+          class="slide-iframe-bg"
+          data-background-color="#1a2332"
+          data-transition="slide"
+        >
+          <div class="demo-caption">
+            <p class="demo-tag">Before — the source</p>
+            <p>
+              Aiken et al., <em>"Charting a Course for AI in Science"</em>
+              (Issues in Science &amp; Technology, Spring 2026) — pages of
+              dense prose. The wall of text. <em>(PDF shown live at the talk; not redistributed in this archive copy — read it at <a href="https://issues.org/ai-in-science-aiken-batalis-tananbaum/">Issues in Science &amp; Technology</a>.)</em>
+            </p>
+          </div>
+
+          <aside class="notes">
+            <h2>Example — the article (~20s) — vertical under "walls of text"</h2>
+            <p><strong>[ON ARRIVAL — live PDF]</strong></p>
+            <p>
+              "Quick concrete example. This is a real article on AI in science —
+              several pages of dense prose. Genuinely useful, but exactly the
+              kind of thing you don't want to read end-to-end just for the gist."
+            </p>
+            <p><em>(Scroll briefly to show the density — it's live.)</em></p>
+            <p><em>↓ DOWN: the artifact I made from it.</em></p>
+          </aside>
+        </section>
+
+        <!-- 5.2 (down) — AFTER: the HTML artifact derived from the article -->
+        <section
+          class="slide-iframe-bg"
+          data-background-iframe="assets/artifacts/ai-in-science-summary.html"
+          data-background-interactive
+          data-transition="slide"
+        >
+          <div class="demo-caption">
+            <p class="demo-tag">After — the artifact</p>
+            <p>
+              The same paper as an interactive <strong>HTML summary</strong> —
+              SVG diagrams, scannable in seconds. Same source, far less reading.
+            </p>
+          </div>
+
+          <aside class="notes">
+            <h2>Example — the artifact (~25s) — vertical under "walls of text"</h2>
+            <p><strong>[ON ARRIVAL — live HTML artifact]</strong></p>
+            <p>
+              "And here's what I asked for instead: the same paper as an HTML
+              artifact — visual, SVG diagrams, scannable in seconds. Same
+              information, a fraction of the reading. This is the payoff."
+            </p>
+            <p><em>(Scroll through the diagrams — it's live and interactive.)</em></p>
+            <p><em>→ SPACE: a quick plug.</em></p>
+          </aside>
+        </section>
+        <!-- /horizontal slide 5 -->
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 6. CLOSING — BSSw fellowship plug + follow the project      -->
+        <!-- ============================================================ -->
+        <section
+          class="slide-content"
+          data-transition="fade"
+          data-background-image="assets/images/4G4A1413-Pano.JPG"
+          data-background-opacity="0.15"
+        >
+          <ncar-title-bar title="A quick plug: my BSSw Fellowship"></ncar-title-bar>
+
+          <p class="intro">Scientific Agentic Engineering (SAE)</p>
+
+          <div class="with-image">
+            <div>
+              <ul>
+                <li>
+                  <strong>Validation loops</strong>, human oversight &amp;
+                  domain-specific safeguards
+                </li>
+                <li>
+                  Hands-on with <strong>skills</strong>, <strong>MCPs</strong>,
+                  scoped sub-agents — and more
+                </li>
+                <li>
+                  Applying SAE safely — guardrails for security &amp; keeping a
+                  session focused
+                </li>
+                <li>More failure cases I've hit — and how to avoid them</li>
+              </ul>
+              <p style="margin-top: 24px">
+                Framework, reference workflow &amp; tutorials — over the next 12
+                months.
+              </p>
+              <p style="margin-top: 32px; font-size: 28px; font-weight: 600">
+                <a
+                  href="https://vweeks.github.io/scientific-agentic-engineering"
+                  style="color: var(--text-link)"
+                >
+                  vweeks.github.io/scientific-agentic-engineering
+                </a>
+              </p>
+              <div class="stat-boxes">
+                <div class="box">
+                  <span class="label">GitHub</span>
+                  <span class="value">github.com/vweeks</span>
+                </div>
+                <div class="box">
+                  <span class="label">Email</span>
+                  <span class="value">vweeks@ucar.edu</span>
+                </div>
+              </div>
+            </div>
+            <img
+              src="assets/images/sae-qr-code.png"
+              alt="QR code — vweeks.github.io/scientific-agentic-engineering"
+              style="max-height: 600px; object-fit: contain"
+            />
+          </div>
+
+          <p class="slide-footnote slide-footnote--pinned">
+            Always follow current NSF NCAR / UCAR guidance on AI-tool use —
+            especially in sensitive roles. Tools and policies are evolving fast.
+          </p>
+
+          <aside class="notes">
+            <h2>Closing — BSSw plug (~30s)</h2>
+            <p><strong>[ON ARRIVAL — everything visible]</strong></p>
+            <p>
+              "Quick plug: my BSSw Fellowship, Scientific Agentic Engineering —
+              bringing validation loops, human oversight, and domain-specific
+              safeguards to AI-assisted scientific work."
+            </p>
+            <p>
+              "It goes deeper on what I only touched today — skills, MCPs, and
+              scoped sub-agents — plus how to apply all of it safely: keeping
+              sessions secure and focused, and a lot more failure cases and how
+              to avoid them."
+            </p>
+            <p>
+              "It's all building in public over the next year — follow along,
+              and I'd love to compare notes. Thanks!"
+            </p>
+            <p>
+              <em
+                >(One caveat worth voicing: always defer to current NCAR/UCAR
+                guidance on AI-tool use — see the footnote.)</em
+              >
+            </p>
+            <p><strong>No next slide.</strong> Stand here for discussion.</p>
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <!-- reveal.js core -->
+    <script src="vendor/reveal.js/dist/reveal.js"></script>
+    <!-- Plugins -->
+    <script src="vendor/reveal.js/dist/plugin/notes.js"></script>
+
+    <script>
+      Reveal.initialize({
+        hash: true,
+        /*
+        Sample Sizes:
+        - Common laptop panels: 1920 x 1200
+        - HD: 1920 x 1080
+        - QHD: 2560 x 1440
+        - Ultrawide QHD: 3440 x 1440
+        */
+        width: 2560,
+        height: 1440,
+        center: true,
+        margin: 0.08,
+        minScale: 0.1,
+        maxScale: 2.0,
+        pdfSeparateFragments: false,
+        pdfMaxPagesPerSlide: 1,
+        pdfPageHeightOffset: -10,
+        //slideNumber: "h.v",
+        slideNumber: (slide) => {
+          let indices = Reveal.getIndices(slide);
+          if (indices.h === 0) return [""];
+
+          let sep = ".";
+          let presName = ""; // set e.g. "BSSw Fellows — Project Introductions" for a footer label
+
+          let value = [];
+
+          let horizontalOffset =
+            slide && slide.dataset.visibility === "uncounted" ? 0 : 1;
+          value.push(indices.h + horizontalOffset);
+
+          if (this.Reveal.isVerticalSlide(slide))
+            value.push(sep, indices.v + 1);
+
+          if (presName === "") return value;
+
+          if (Reveal.isVerticalSlide(slide)) {
+            return [
+              `<a>
+                <span>${value[0]}</span>
+                <span>${sep}</span>
+                <span>${indices.v + 1}</span>
+                <span class="opt-footer-name">${presName}</span>
+              </a>`,
+            ];
+          } else {
+            return [
+              `<a>
+                <span class="slide-number-a">${value[0]}</span>
+                <span class="opt-footer-name">${presName}</span>
+              </a>`,
+            ];
+          }
+        },
+        //showSlideNumber: "speaker",
+        controls: true,
+        progress: true,
+        transition: "slide",
+        backgroundTransition: "fade",
+        plugins: [RevealNotes],
+      });
+
+      // Theme toggle: press T to switch dark ↔ light
+      {
+        const html = document.documentElement;
+        // URL override wins over localStorage — used by scripts/build-pdf.sh
+        // so the PDF build can pin a theme without polluting the user's
+        // browser state.
+        const urlTheme = new URLSearchParams(location.search).get("theme");
+        const saved = localStorage.getItem("ncar-theme");
+        if (urlTheme === "light" || urlTheme === "dark") {
+          html.setAttribute("data-theme", urlTheme);
+        } else if (saved) {
+          html.setAttribute("data-theme", saved);
+        }
+
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "t" &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            !e.altKey &&
+            document.activeElement.tagName !== "INPUT"
+          ) {
+            const next =
+              html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+            html.setAttribute("data-theme", next);
+            localStorage.setItem("ncar-theme", next);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
