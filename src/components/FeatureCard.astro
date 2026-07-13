@@ -4,9 +4,10 @@ interface Props {
   description: string;
   href?: string;
   available?: boolean;
+  eta?: string;
 }
 
-const { title, description, href, available = true } = Astro.props;
+const { title, description, href, available = true, eta } = Astro.props;
 ---
 
 <div class:list={[
@@ -31,7 +32,7 @@ const { title, description, href, available = true } = Astro.props;
   </p>
   {!available && (
     <span class="mt-3 inline-block text-xs font-medium text-gray-400 uppercase tracking-wide">
-      Coming soon
+      {eta ? `Expected ${eta}` : 'Coming soon'}
     </span>
   )}
 </div>

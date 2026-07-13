@@ -1,0 +1,185 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const modes = [
+  {
+    name: 'Tab-complete',
+    what: 'The editor finishes the line you were already writing.',
+    check: 'Read what it wrote. It is still your line, and it still carries your name in the blame log.',
+  },
+  {
+    name: 'Console copy/paste',
+    what: 'You describe a problem in a chat window and move the answer into your code by hand.',
+    check:
+      'Check the snippet against the real API and the real file format — not against the model’s recollection of them. Hallucinated function signatures are most convincing when they are plausible.',
+  },
+  {
+    name: 'MCP & tool use',
+    what:
+      'The model calls tools — reading a file, querying a dataset, running a command — instead of guessing at their contents.',
+    check:
+      'Prefer read-only tools by default, and let the tool be the source of truth for data. A model that can look it up should never be left to remember it.',
+  },
+  {
+    name: 'Planning mode',
+    what: 'The agent proposes what it intends to do, and waits.',
+    check:
+      'Read the plan before it acts. This is the cheapest checkpoint available: a wrong plan costs a sentence to fix, a wrong implementation costs a review.',
+  },
+  {
+    name: 'Autonomous agent teams',
+    what: 'Long-running agents act broadly on their own, coordinating sub-agents, with few checkpoints before they act.',
+    check:
+      'The most convenient mode and the highest-risk one. Keep it sandboxed and local, scope each sub-agent tightly, and require human approval at the decisions that matter.',
+  },
+];
+
+const traps = [
+  {
+    name: 'Context bloat',
+    line: 'More context is not more signal.',
+    body:
+      'Long sessions drift as the window fills. Key details get buried and quality slips, quietly and without an error message. Scope tightly, and reset deliberately.',
+  },
+  {
+    name: 'Over-trust',
+    line: 'Fluent is not correct.',
+    body:
+      'Confident output that is quietly wrong is the characteristic failure of these tools. The real work shifts to verification. Trust, but always check.',
+  },
+];
+
+const failureModes = [
+  'Unit confusion',
+  'Precision loss',
+  'Subtle physics violations',
+  'Visualization misinterpretation',
+];
+
+const pillars = [
+  {
+    name: 'Validation loops',
+    body: 'Domain checks at each decision point — units, conservation, precision, provenance.',
+  },
+  {
+    name: 'Human-in-the-loop oversight',
+    body: 'Review gates at the decisions that matter. Not everywhere.',
+  },
+  {
+    name: 'Domain-specific safeguards',
+    body: 'Physics checks, precision tests, scope-drift containment, tech-stack provenance.',
+  },
+];
+---
+
+<BaseLayout
+  title="Get started — Scientific Agentic Engineering"
+  description="How to work with AI agents on scientific code without giving up scientific rigor: the modes of use, the traps, and the checks that match each."
+>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900">Get started</h1>
+
+    <p class="mt-4 text-lg text-gray-600 leading-relaxed">
+      You do not have to adopt agents wholesale to work with them well. The
+      useful question is not <em>which tool</em> — it is
+      <strong class="text-gray-900">how much autonomy goes unchecked</strong>,
+      and what you have in place to catch it when it goes wrong.
+    </p>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Five ways of working — and the check each one needs</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      These are not rungs on a ladder, and “further down the list” is not
+      “better.” They complement each other, and most practitioners move between
+      them month to month, choosing by task. What changes as you go down the
+      list is how much happens without you watching — so what has to change with
+      it is the check you put in place.
+    </p>
+
+    <div class="mt-6 space-y-5">
+      {modes.map(({ name, what, check }, i) => (
+        <div class="border-l-4 border-blue-100 pl-5 py-1">
+          <h3 class="font-semibold text-gray-900">
+            <span class="text-blue-600 tabular-nums">{i + 1}.</span> {name}
+          </h3>
+          <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
+          <p class="mt-2 text-gray-600 leading-relaxed">
+            <span class="font-medium text-gray-900">The check:</span> <Fragment set:html={check} />
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <p class="mt-6 text-gray-600 leading-relaxed">
+      Autonomy trades transparency for throughput. That trade is sometimes worth
+      making — but it should be made deliberately, and never on the code whose
+      results you intend to publish.
+    </p>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Two traps, whatever mode you are in</h2>
+
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {traps.map(({ name, line, body }) => (
+        <div class="rounded-lg border border-gray-200 p-5">
+          <h3 class="font-semibold text-gray-900">{name}</h3>
+          <p class="mt-1 text-sm font-medium text-blue-600">{line}</p>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code raises the stakes</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      In most software, a wrong choice costs you aesthetic debt. In scientific
+      software, a wrong choice can cost you
+      <strong class="text-gray-900">corrupted results that still pass CI</strong>
+      — a green test suite over a physically meaningless answer. The failures
+      that do this are domain failures, and general-purpose tooling is not
+      looking for them:
+    </p>
+
+    <ul class="mt-4 flex flex-wrap gap-2">
+      {failureModes.map(m => (
+        <li class="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">{m}</li>
+      ))}
+    </ul>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">What Scientific Agentic Engineering adds</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      General-purpose AI is powerful; scientific work needs domain-specific
+      safeguards. The framework organizes those safeguards under three
+      principles:
+    </p>
+
+    <dl class="mt-5 space-y-4">
+      {pillars.map(({ name, body }) => (
+        <div>
+          <dt class="font-semibold text-gray-900">{name}</dt>
+          <dd class="mt-1 text-gray-600 leading-relaxed">{body}</dd>
+        </div>
+      ))}
+    </dl>
+
+    <p class="mt-6 text-gray-600 leading-relaxed">
+      The principles are tool-agnostic on purpose — products change faster than
+      practices. The
+      <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a>
+      develops them in depth, and the
+      <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a>
+      defines the vocabulary used throughout.
+    </p>
+
+    <div class="mt-12 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
+      <p class="text-sm text-gray-600 leading-relaxed">
+        <strong class="text-gray-900">A note on institutional policy.</strong>
+        Always follow current NSF NCAR / UCAR guidance on AI-tool use —
+        especially in sensitive roles. Tools and policies are both evolving
+        quickly, and this site is not a substitute for either.
+      </p>
+    </div>
+  </div>
+</BaseLayout>
