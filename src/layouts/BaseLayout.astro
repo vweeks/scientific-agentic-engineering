@@ -1,6 +1,7 @@
 ---
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import PolishOverlay from '../components/PolishOverlay.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -27,5 +28,6 @@ const { title, description = 'Scientific Agentic Engineering — methodology for
       <slot />
     </main>
     <Footer />
+    <PolishOverlay />
   </body>
 </html>
