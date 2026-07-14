@@ -10,8 +10,8 @@ const modes = [
     check: 'Read what it wrote. It is still your line, and it still carries your name in the blame log.',
   },
   {
-    name: 'Console copy/paste',
-    what: 'You describe a problem in a chat window and move the answer into your code by hand.',
+    name: 'Chat assistant',
+    what: 'You describe a problem in a chat window and copy/paste the answer into your code by hand.',
     check:
       'Check the snippet against the real API and the real file format — not against the model’s recollection of them. Hallucinated function signatures are most convincing when they are plausible.',
   },
@@ -32,7 +32,7 @@ const modes = [
     name: 'Autonomous agent teams',
     what: 'Long-running agents act broadly on their own, coordinating sub-agents, with few checkpoints before they act.',
     check:
-      'The most convenient mode and the highest-risk one. Keep it sandboxed and local, scope each sub-agent tightly, and require human approval at the decisions that matter.',
+      'The most convenient mode and the highest-risk one. Keep it sandboxed and local, scope each sub-agent tightly, and review the plan before the run starts — once sub-agents are working in parallel, the plan is the last point where your judgment is cheap to apply.',
   },
 ];
 
@@ -41,13 +41,13 @@ const traps = [
     name: 'Context bloat',
     line: 'More context is not more signal.',
     body:
-      'Long sessions drift as the window fills. Key details get buried and quality slips, quietly and without an error message. Scope tightly, and reset deliberately.',
+      'Long sessions drift as the window fills. Details you established early get buried, and nothing warns you when they do. Scope tightly and start fresh often.',
   },
   {
     name: 'Over-trust',
     line: 'Fluent is not correct.',
     body:
-      'Confident output that is quietly wrong is the characteristic failure of these tools. The real work shifts to verification. Trust, but always check.',
+      'Confident output that is quietly wrong is the failure you will meet most often. Nothing in the tone of an answer tells you whether you are looking at one, so expect verification to take back some of the time that generation saved.',
   },
 ];
 
@@ -65,7 +65,7 @@ const pillars = [
   },
   {
     name: 'Human-in-the-loop oversight',
-    body: 'Review gates at the decisions that matter. Not everywhere.',
+    body: 'Review gates placed deliberately rather than uniformly. Which decisions earn one depends on the project.',
   },
   {
     name: 'Domain-specific safeguards',
@@ -75,29 +75,44 @@ const pillars = [
 ---
 
 <BaseLayout
-  title="Get started — Scientific Agentic Engineering"
-  description="How to work with AI agents on scientific code without giving up scientific rigor: the modes of use, the traps, and the checks that match each."
+  title="Overview — Scientific Agentic Engineering"
+  description="How to work with AI agents on scientific code without giving up scientific rigor: the common ways of working, and the check each one needs."
 >
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-3xl font-bold text-gray-900">Get started</h1>
+    <h1 class="text-3xl font-bold text-gray-900">Overview</h1>
 
     <p class="mt-4 text-lg text-gray-600 leading-relaxed">
-      You do not have to adopt agents wholesale to work with them well. The
-      useful question is not <em>which tool</em> — it is
-      <strong class="text-gray-900">how much autonomy goes unchecked</strong>,
-      and what you have in place to catch it when it goes wrong.
+      You do not have to adopt agents wholesale to work with them well. Most of
+      the risk does not come from which tool you picked. It comes from
+      <strong class="text-gray-900">how much of the agent’s work reaches your
+      results without a human decision or an automated check in between</strong>.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Five common ways of working — and the check each one needs</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      These are five approaches I see often, not a complete taxonomy — you may
-      well work in ways that are not on this list. They are also not rungs on a
-      ladder, and “further down the list” is not “better.” They complement each
-      other, and many practitioners move between them month to month, choosing
-      by task. What changes as you go down the list is how much happens without
-      you watching — so what has to change with it is the check you put in
-      place.
+      These are five approaches I see often. It is not a complete taxonomy, and
+      there are certainly others. There is a real order to them, but it is not a
+      ranking. The first lives in your editor and the second in a chat window.
+      The last three live in agentic tools like Claude Code, and they
+      <em>nest</em>: an autonomous run is doing planning and tool calls inside
+      itself.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      So adopting a later approach does not retire the earlier ones. Laying
+      groundwork autonomously and then going back over the details by hand with
+      tab-complete is an ordinary afternoon, not a regression — and some problems
+      are simply better suited to one approach than another.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      What <em>does</em> change as you go down the list is how much of the work
+      proceeds without you actively deciding anything. Watching a console scroll
+      past is not the same as making a call, and once sub-agents are running in
+      parallel there is work you could not watch even if you wanted to. That is
+      why the plan matters: it is the last point where a human decision is cheap,
+      and often the only place one still fits.
     </p>
 
     <div class="mt-6 space-y-5">
@@ -132,7 +147,7 @@ const pillars = [
       ))}
     </div>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code raises the stakes</h2>
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       In most software, a wrong choice costs you aesthetic debt. In scientific

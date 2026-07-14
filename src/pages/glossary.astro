@@ -25,7 +25,7 @@ const groups = [
       {
         term: 'Human-in-the-loop oversight',
         def:
-          'The second principle: review gates at the decisions that matter. Not everywhere — oversight that is uniform is oversight that gets skipped.',
+          'The second principle: concentrate human review on the decisions that matter, and accept lighter review elsewhere. Which decisions those are is project-specific — the language a prototype is written in may be incidental, while in a code base expected to match its neighbors it is not. Recurring cases include decisions that later work will inherit without re-examining, and decisions that steer the agent itself, since a wrong assumption early pollutes everything that follows it. The framework treats this at length. The point here is that review is a finite resource, and spreading it evenly spends it on decisions that did not need it.',
       },
       {
         term: 'Domain-specific safeguard',
@@ -45,7 +45,7 @@ const groups = [
       {
         term: 'Sub-agent',
         def:
-          'A scoped agent launched by a session to carry out a bounded task, typically with restricted tools and a fresh context. Isolation is the point: a reviewer that never saw the implementation is a reviewer that cannot be anchored by it.',
+          'A scoped agent launched by a session to carry out a bounded task, typically with restricted tools and a fresh context. Isolation is the point, for the same reason code review is: the reviewer is not the author. You already proofread your own work before opening the pull request, so reading it again yourself turns up nothing. An agent carrying the context of its own design decisions is in the same position — it will tend to confirm them, and if you ask it for tests, it will write tests that pass against the code as written rather than against the behavior you actually wanted.',
       },
       {
         term: 'Skill',
@@ -97,7 +97,7 @@ const groups = [
   {
     heading: 'Failure modes',
     intro:
-      'The failures that matter most in scientific code are the ones that do not announce themselves. Each of these can produce corrupted results that still pass CI.',
+      'Each of these can produce corrupted results that still pass CI: the program runs, the tests go green, and the number it prints is wrong.',
     terms: [
       {
         term: 'Unit confusion',
@@ -127,7 +127,7 @@ const groups = [
       {
         term: 'Over-trust',
         def:
-          'Fluent is not correct. Confident output that is quietly wrong is the characteristic failure of these tools, and the reason the real work shifts to verification.',
+          'Fluent is not correct. Quietly wrong output reads exactly like correct output, so an answer’s confidence is not evidence of its accuracy. The check has to come from somewhere other than the context that produced the answer — a test, a validator, a sub-agent reviewing with fresh context, or a human.',
       },
       {
         term: 'Scope drift',
@@ -147,9 +147,8 @@ const groups = [
     <h1 class="text-3xl font-bold text-gray-900">Glossary</h1>
 
     <p class="mt-4 text-gray-600 leading-relaxed">
-      A shared vocabulary is the first thing a fast-moving field loses. These are
-      the terms used across this project, defined as they are used here — not as
-      any one vendor defines them.
+      These are the terms used across this project, defined as they are used here
+      rather than as any one vendor defines them.
     </p>
 
     <p class="mt-3 text-sm text-gray-500 leading-relaxed">
@@ -176,7 +175,7 @@ const groups = [
 
     <p class="mt-12 text-gray-600 leading-relaxed">
       New to this? The
-      <a href={`${base}get-started/`} class="text-blue-600 hover:underline">Get started</a>
+      <a href={`${base}overview/`} class="text-blue-600 hover:underline">Overview</a>
       page puts these terms to work.
     </p>
   </div>
