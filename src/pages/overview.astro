@@ -3,35 +3,56 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const base = import.meta.env.BASE_URL;
 
-const modes = [
+// Grouped by where the work happens, which is also the order these became widely
+// available. The last three share a group because they share a tool: what separates
+// them is how much you hand over, not what you installed.
+const editorAndChat = [
   {
-    name: 'Tab-complete',
     where: 'In your editor',
-    what: 'Your editor finishes the line you were already writing.',
+    since: 'since 2021',
+    modes: [
+      {
+        n: 1,
+        name: 'Tab-complete',
+        what: 'Your editor finishes the line you were already writing.',
+      },
+    ],
   },
   {
-    name: 'Chat assistant',
     where: 'In a chat window',
-    what: 'You describe a problem in a chat window and copy/paste the answer into your code by hand.',
-  },
-  {
-    name: 'Tool use',
-    where: 'In a coding assistant',
-    what:
-      'The assistant calls tools instead of guessing — reading a file, querying a dataset, running a command. Plugins, MCP servers, and skills are all ways of handing it a tool.',
-  },
-  {
-    name: 'Planning mode',
-    where: 'In a coding assistant',
-    what: 'The assistant proposes what it intends to do, and waits for you before it does it.',
-  },
-  {
-    name: 'Autonomous agent teams',
-    where: 'In a coding assistant',
-    what:
-      'Long-running agents work broadly on their own and coordinate sub-agents, with few checkpoints before they act.',
+    since: 'since 2022',
+    modes: [
+      {
+        n: 2,
+        name: 'Chat assistant',
+        what: 'You describe a problem, then copy/paste the answer into your code yourself.',
+      },
+    ],
   },
 ];
+
+const assistantGroup = {
+  where: 'In a coding assistant',
+  since: 'since 2023',
+  note: 'These three are the same tool, driven differently.',
+  modes: [
+    {
+      n: 3,
+      name: 'Tool use',
+      what: 'The assistant calls a tool instead of guessing — reading a file, querying a dataset, running a command. Plugins, MCP servers, and skills are all ways of handing it a tool.',
+    },
+    {
+      n: 4,
+      name: 'Planning mode',
+      what: 'The assistant proposes what it intends to do, and waits for you before it does it.',
+    },
+    {
+      n: 5,
+      name: 'Autonomous agent teams',
+      what: 'Long-running agents work broadly on their own and coordinate sub-agents, with few checkpoints before they act.',
+    },
+  ],
+};
 
 const failureModes = [
   'Unit confusion',
@@ -44,14 +65,12 @@ const traps = [
   {
     name: 'Context bloat',
     line: 'More context is not more signal.',
-    body:
-      'Long sessions drift as the window fills. Details you established early get buried, and nothing warns you when they do.',
+    body: 'Long sessions drift as the window fills. Details you established early get buried, and nothing warns you when they do.',
   },
   {
     name: 'Over-trust',
     line: 'Fluent is not correct.',
-    body:
-      'Confident output that is quietly wrong is the failure you will meet most often, and nothing in the tone of an answer tells you whether you are looking at one.',
+    body: 'Confident output that is quietly wrong is the failure you will meet most often, and nothing in the tone of an answer tells you whether you are looking at one.',
   },
 ];
 
@@ -59,26 +78,22 @@ const deliverables = [
   {
     name: 'The Framework',
     when: 'July 2026',
-    body:
-      'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.',
+    body: 'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.',
   },
   {
     name: 'The Community Repository',
     when: 'October 2026',
-    body:
-      'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.',
+    body: 'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.',
   },
   {
     name: 'The Reference Workflow',
     when: 'October 2026',
-    body:
-      'A structured exercise: build a small weather-model error-statistics application with the AI tooling of your choice, and practice catching documented failure modes while you do it.',
+    body: 'A structured exercise: build a small weather-model error-statistics application with the AI tooling of your choice, and practice catching documented failure modes while you do it.',
   },
   {
     name: 'Tutorials and workshops',
     when: 'January and April 2027',
-    body:
-      '“Building Your First Scientific Agent,” followed by live sessions with real-time Q&A, recorded and published for anyone who could not attend.',
+    body: '“Building Your First Scientific Agent,” followed by live sessions with real-time Q&A, recorded and published for anyone who could not attend.',
   },
 ];
 
@@ -98,20 +113,36 @@ const notScope = [
     <h1 class="text-3xl font-bold text-gray-900">Overview</h1>
 
     <p class="mt-4 text-lg text-gray-600 leading-relaxed">
-      AI coding agents got good quickly, and research software teams are already
-      using them. The productivity is real. What has not kept pace is the practice
-      of checking their output — and scientific software fails in ways that
-      general-purpose tooling is not looking for.
+      AI coding agents got good quickly, and research software teams are already using them. The
+      productivity is real. What has not kept pace is the practice of checking their output, and
+      scientific software fails in ways that general-purpose tooling is not looking for.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      In most software, a wrong choice costs you aesthetic debt. In scientific
-      software, a wrong choice can cost you
-      <strong class="text-gray-900">corrupted results that still pass CI</strong>
-      — a green test suite sitting on top of a physically meaningless answer. The
-      failures that do this are domain failures, and a linter will not find them:
+      Plenty of software is high-stakes. A payments system that drops a transaction and a flight
+      controller that mishandles an altitude can both do real harm. But in each case there is a right
+      answer, and something in the system is built to notice when it fails to appear: ledgers get
+      reconciled, alarms fire, a user says the number is wrong.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      What sets scientific software apart is not how much the answer matters. It is how hard it is to
+      tell that the answer is wrong. The output is a quantity nobody knew in advance, which is the
+      reason for computing it at all.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      Some of it can still be checked. Analytic solutions, benchmark cases, and observations all give
+      you something to compare against, and where they exist you should be using them. They do not
+      cover most of what a working scientific code does on a given day. For the rest, a test can only
+      assert what you already knew to expect, so an error that still yields a physically plausible
+      number passes every check you have. The result is <strong class="text-gray-900">corrupted results that still pass CI</strong>: the program runs, the suite goes green, and the figure goes into the paper.
+    </p>
+
+    <p class="mt-4 text-gray-600 leading-relaxed">
+      The errors that behave this way are domain errors, and a linter has nothing to say about them:
     </p>
 
     <ul class="mt-4 flex flex-wrap gap-2">
@@ -121,69 +152,95 @@ const notScope = [
     </ul>
 
     <p class="mt-4 text-gray-600 leading-relaxed">
-      Reproducibility erodes the same way, and more quietly. A result nobody can
-      reconstruct — because nobody recorded which parts an agent wrote, or who
-      approved them — is a result that cannot be defended.
+      Plausible output is what a language model is built to produce. In most domains that is the whole
+      point of it. Here it is also the hazard.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      Reproducibility erodes the same way, and more quietly. A result nobody can reconstruct, because
+      nobody recorded which parts an agent wrote or who approved them, is a result that cannot be
+      defended.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Two reasonable reactions</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      Research software has not settled on these tools. Some teams adopted them
-      quickly, and are finding that review practices built to catch human mistakes
-      do not catch machine ones. Others have stayed away, on the reasonable
-      grounds that a plausible wrong answer is worse than no answer at all.
+      Research software has not settled on these tools. Some teams adopted them quickly, and are
+      finding that review practices built to catch human mistakes do not catch machine ones. Others
+      have stayed away, on the reasonable grounds that a plausible wrong answer is worse than no
+      answer at all.
     </p>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project is aimed at both. The caution is well founded and the
-      productivity is real, and the work is figuring out what has to be in place
-      before you can have both at once.
+      Both reactions are responding to something true. This project is about what has to be in place
+      before a team can take the speed without accepting the failure modes as the price of it.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Five ways people work with AI on code</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      These arrived roughly in the order below, which is why they are often
-      described as stages. They are not stages, and further down the list is not
-      better. Each one arrived without retiring the one before it, and most people
-      move between them by task — laying groundwork with an agent and then going
-      back over the details by hand is an ordinary afternoon, not a regression.
+      These became widely available in roughly the order below: first in editors, then in chat
+      windows, then in coding assistants. That order is why people describe them as stages. They are
+      not stages. Nothing further down the list is better, each arrived without retiring the one
+      before it, and most people move between them by task. Laying groundwork with an agent and then
+      going back over the details by hand is an ordinary afternoon, not a regression.
     </p>
 
-    <p class="mt-3 text-gray-600 leading-relaxed">
-      It also matters that
-      <strong class="text-gray-900">agency is a matter of degree, not a category</strong>.
-      A coding assistant such as Claude Code or Codex can be driven at any of the
-      last three levels. What separates them is how you use the tool, not which
-      tool you installed.
-    </p>
-
-    <div class="mt-6 space-y-5">
-      {modes.map(({ name, where, what }, i) => (
-        <div class="border-l-4 border-blue-100 pl-5 py-1">
-          <div class="flex items-baseline gap-3 flex-wrap">
-            <h3 class="font-semibold text-gray-900">
-              <span class="text-blue-600 tabular-nums">{i + 1}.</span> {name}
-            </h3>
-            <span class="text-xs uppercase tracking-wide text-gray-400">{where}</span>
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {editorAndChat.map(({ where, since, modes }) => (
+        <div class="rounded-lg border border-gray-200 bg-gray-50 p-5">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500">{where}</h3>
+            <span class="text-xs text-gray-400 tabular-nums">{since}</span>
           </div>
-          <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
+          <ul class="mt-4 space-y-4">
+            {modes.map(({ n, name, what }) => (
+              <li class="flex gap-3">
+                <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-semibold tabular-nums text-gray-600">{n}</span>
+                <div>
+                  <h4 class="font-semibold text-gray-900">{name}</h4>
+                  <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
     </div>
 
+    <div class="mt-4 rounded-lg border border-blue-200 bg-blue-50/60 p-5 sm:p-6">
+      <div class="flex items-baseline justify-between gap-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-blue-700">{assistantGroup.where}</h3>
+        <span class="text-xs text-blue-500 tabular-nums">{assistantGroup.since}</span>
+      </div>
+      <p class="mt-2 text-sm text-blue-900/80 leading-relaxed">{assistantGroup.note}</p>
+      <ul class="mt-4 space-y-4">
+        {assistantGroup.modes.map(({ n, name, what }) => (
+          <li class="flex gap-3">
+            <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-blue-300 bg-white text-xs font-semibold tabular-nums text-blue-700">{n}</span>
+            <div>
+              <h4 class="font-semibold text-gray-900">{name}</h4>
+              <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+
     <p class="mt-6 text-gray-600 leading-relaxed">
-      What changes down the list is how much of the work proceeds without an
-      active decision from you. Watching a session scroll past is not the same as
-      deciding anything, and once sub-agents are running in parallel, keeping up
-      with all of them becomes considerably more taxing. Where to spend your
-      attention, and what to check when you cannot spend it, is what the
-      <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a>
-      is for.
+      That last group is the one worth dwelling on. A coding assistant such as Claude Code or Codex
+      can be driven at any of the three, so <strong class="text-gray-900">agency is a matter of degree, not a category</strong>. What separates them is how much you hand over, not which tool you installed.
     </p>
 
-    <h3 class="mt-10 font-semibold text-gray-900">Two risks that do not depend on which one you pick</h3>
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      What changes as you hand over more is how much of the work proceeds without an active decision
+      from you. Watching a session scroll past is not the same as deciding anything, and once
+      sub-agents are running in parallel, keeping up with all of them becomes considerably more
+      taxing. Attention is the real constraint. Where to spend it, and what to check where you cannot,
+      is what the <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> is for.
+    </p>
+
+    <h3 class="mt-10 font-semibold text-gray-900">Two risks common to all five</h3>
 
     <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
       {traps.map(({ name, line, body }) => (
@@ -198,7 +255,7 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is building</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      The fellowship runs from April 2026 to April 2027 and produces four things.
+      The fellowship runs from April 2026 through April 2027 and produces four things.
     </p>
 
     <dl class="mt-5 space-y-5">
@@ -214,17 +271,14 @@ const notScope = [
     </dl>
 
     <p class="mt-6 text-gray-600 leading-relaxed">
-      The aim throughout is to turn broad AI capability into reliable development
-      instruments: tools a scientist can point at real work and trust the output
-      of, for reasons they can articulate.
+      The aim throughout is to turn broad AI capability into reliable development instruments: tools
+      you can use on real scientific work and still defend the result afterward.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is not</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This is a project about guidance and education, not a software product. It
-      is worth being specific about that, because the alternative is letting
-      people find out the hard way:
+      This is a project about guidance and education rather than a software product. Specifically:
     </p>
 
     <ul class="mt-4 space-y-3">
@@ -239,36 +293,27 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why the framework is tool-agnostic</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project’s subject matter changes underneath it. MCP specifications take
-      breaking changes. Agent frameworks get rewritten. Tools named in a document
-      written today may be deprecated or superseded before the fellowship ends.
+      This project’s subject matter changes underneath it. MCP specifications take breaking changes
+      and agent frameworks get rewritten. A tool named in a document written today may be deprecated
+      or superseded before the fellowship ends.
     </p>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      So the framework commits to principles rather than products. Validation
-      loops, human oversight, and domain-specific safeguards are claims about what
-      has to be true of a workflow, not about which vendor you buy from, and they
-      should still hold once the current generation of tools is gone. Where
-      specific tools appear, they appear as examples.
+      So the framework commits to principles rather than products. Validation loops, human oversight,
+      and domain-specific safeguards are claims about what has to be true of a workflow, not about
+      which vendor you buy from, and they should still hold once the current generation of tools is
+      gone. Where specific tools appear, they appear as examples.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Where to go next</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      The
-      <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a>
-      develops the principles in depth and says where the checks go. The
-      <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a>
-      defines the vocabulary used across the project, including every term on this
-      page.
+      The <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> develops the principles in depth and says where the checks go. The <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a> defines the vocabulary used across the project, including every term on this page.
     </p>
 
     <div class="mt-8 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
       <p class="text-sm text-gray-600 leading-relaxed">
-        <strong class="text-gray-900">A note on institutional policy.</strong>
-        Always follow your institution’s current guidance on AI-tool use —
-        especially in sensitive roles. Tools and policies are both evolving
-        quickly, and this site is not a substitute for either.
+        <strong class="text-gray-900">A note on institutional policy.</strong> Always follow your institution’s current guidance on AI-tool use, especially in sensitive roles. Tools and policies are both evolving quickly, and this site is not a substitute for either.
       </p>
     </div>
   </div>
