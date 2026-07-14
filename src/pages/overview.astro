@@ -6,48 +6,30 @@ const base = import.meta.env.BASE_URL;
 const modes = [
   {
     name: 'Tab-complete',
-    what: 'The editor finishes the line you were already writing.',
-    check: 'Read what it wrote. It is still your line, and it still carries your name in the blame log.',
+    where: 'In your editor',
+    what: 'Your editor finishes the line you were already writing.',
   },
   {
     name: 'Chat assistant',
+    where: 'In a chat window',
     what: 'You describe a problem in a chat window and copy/paste the answer into your code by hand.',
-    check:
-      'Check the snippet against the real API and the real file format — not against the model’s recollection of them. Hallucinated function signatures are most convincing when they are plausible.',
   },
   {
-    name: 'MCP & tool use',
+    name: 'Tool use',
+    where: 'In a coding assistant',
     what:
-      'The model calls tools — reading a file, querying a dataset, running a command — instead of guessing at their contents.',
-    check:
-      'Prefer read-only tools by default, and let the tool be the source of truth for data. A model that can look it up should never be left to remember it.',
+      'The assistant calls tools instead of guessing — reading a file, querying a dataset, running a command. Plugins, MCP servers, and skills are all ways of handing it a tool.',
   },
   {
     name: 'Planning mode',
-    what: 'The agent proposes what it intends to do, and waits.',
-    check:
-      'Read the plan before it acts. This is the cheapest checkpoint available: a wrong plan costs a sentence to fix, a wrong implementation costs a review.',
+    where: 'In a coding assistant',
+    what: 'The assistant proposes what it intends to do, and waits for you before it does it.',
   },
   {
     name: 'Autonomous agent teams',
-    what: 'Long-running agents act broadly on their own, coordinating sub-agents, with few checkpoints before they act.',
-    check:
-      'The most convenient mode and the highest-risk one. Keep it sandboxed and local, scope each sub-agent tightly, and review the plan before the run starts — once sub-agents are working in parallel, the plan is the last point where your judgment is cheap to apply.',
-  },
-];
-
-const traps = [
-  {
-    name: 'Context bloat',
-    line: 'More context is not more signal.',
-    body:
-      'Long sessions drift as the window fills. Details you established early get buried, and nothing warns you when they do. Scope tightly and start fresh often.',
-  },
-  {
-    name: 'Over-trust',
-    line: 'Fluent is not correct.',
-    body:
-      'Confident output that is quietly wrong is the failure you will meet most often. Nothing in the tone of an answer tells you whether you are looking at one, so expect verification to take back some of the time that generation saved.',
+    where: 'In a coding assistant',
+    what:
+      'Long-running agents work broadly on their own and coordinate sub-agents, with few checkpoints before they act.',
   },
 ];
 
@@ -58,94 +40,69 @@ const failureModes = [
   'Visualization misinterpretation',
 ];
 
-const pillars = [
+const traps = [
   {
-    name: 'Validation loops',
-    body: 'Domain checks at each decision point — units, conservation, precision, provenance.',
+    name: 'Context bloat',
+    line: 'More context is not more signal.',
+    body:
+      'Long sessions drift as the window fills. Details you established early get buried, and nothing warns you when they do.',
   },
   {
-    name: 'Human-in-the-loop oversight',
-    body: 'Review gates placed deliberately rather than uniformly. Which decisions earn one depends on the project.',
+    name: 'Over-trust',
+    line: 'Fluent is not correct.',
+    body:
+      'Confident output that is quietly wrong is the failure you will meet most often, and nothing in the tone of an answer tells you whether you are looking at one.',
+  },
+];
+
+const deliverables = [
+  {
+    name: 'The Framework',
+    when: 'July 2026',
+    body:
+      'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.',
   },
   {
-    name: 'Domain-specific safeguards',
-    body: 'Physics checks, precision tests, scope-drift containment, tech-stack provenance.',
+    name: 'The Community Repository',
+    when: 'October 2026',
+    body:
+      'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.',
   },
+  {
+    name: 'The Reference Workflow',
+    when: 'October 2026',
+    body:
+      'A structured exercise: build a small weather-model error-statistics application with the AI tooling of your choice, and practice catching documented failure modes while you do it.',
+  },
+  {
+    name: 'Tutorials and workshops',
+    when: 'January and April 2027',
+    body:
+      '“Building Your First Scientific Agent,” followed by live sessions with real-time Q&A, recorded and published for anyone who could not attend.',
+  },
+];
+
+const notScope = [
+  'It produces guidance and educational resources. It does not produce production-grade AI tools, and it does not maintain long-term software infrastructure.',
+  '“Comprehensive methodology” means structured and principled. It does not mean exhaustive coverage of every scientific domain or every AI tool.',
+  'The Community Repository is a curated starter set that demonstrates good practice. It is not a package registry or a software distribution platform.',
+  'The project does not cover new numerical weather prediction models, commercially deployable agent systems, or maintenance of contributed tools beyond April 2027.',
 ];
 ---
 
 <BaseLayout
   title="Overview — Scientific Agentic Engineering"
-  description="How to work with AI agents on scientific code without giving up scientific rigor: the common ways of working, and the check each one needs."
+  description="What Scientific Agentic Engineering is for: the failure modes AI agents introduce in scientific software, the ways people work with these tools, and what this fellowship is and is not building."
 >
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <h1 class="text-3xl font-bold text-gray-900">Overview</h1>
 
     <p class="mt-4 text-lg text-gray-600 leading-relaxed">
-      You do not have to adopt agents wholesale to work with them well. Most of
-      the risk does not come from which tool you picked. It comes from
-      <strong class="text-gray-900">how much of the agent’s work reaches your
-      results without a human decision or an automated check in between</strong>.
+      AI coding agents got good quickly, and research software teams are already
+      using them. The productivity is real. What has not kept pace is the practice
+      of checking their output — and scientific software fails in ways that
+      general-purpose tooling is not looking for.
     </p>
-
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Five common ways of working — and the check each one needs</h2>
-
-    <p class="mt-3 text-gray-600 leading-relaxed">
-      These are five approaches I see often. It is not a complete taxonomy, and
-      there are certainly others. There is a real order to them, but it is not a
-      ranking. The first lives in your editor and the second in a chat window.
-      The last three live in agentic tools like Claude Code, and they
-      <em>nest</em>: an autonomous run is doing planning and tool calls inside
-      itself.
-    </p>
-
-    <p class="mt-3 text-gray-600 leading-relaxed">
-      So adopting a later approach does not retire the earlier ones. Laying
-      groundwork autonomously and then going back over the details by hand with
-      tab-complete is an ordinary afternoon, not a regression — and some problems
-      are simply better suited to one approach than another.
-    </p>
-
-    <p class="mt-3 text-gray-600 leading-relaxed">
-      What <em>does</em> change as you go down the list is how much of the work
-      proceeds without you actively deciding anything. Watching a console scroll
-      past is not the same as making a call, and once sub-agents are running in
-      parallel there is work you could not watch even if you wanted to. That is
-      why the plan matters: it is the last point where a human decision is cheap,
-      and often the only place one still fits.
-    </p>
-
-    <div class="mt-6 space-y-5">
-      {modes.map(({ name, what, check }, i) => (
-        <div class="border-l-4 border-blue-100 pl-5 py-1">
-          <h3 class="font-semibold text-gray-900">
-            <span class="text-blue-600 tabular-nums">{i + 1}.</span> {name}
-          </h3>
-          <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
-          <p class="mt-2 text-gray-600 leading-relaxed">
-            <span class="font-medium text-gray-900">The check:</span> <Fragment set:html={check} />
-          </p>
-        </div>
-      ))}
-    </div>
-
-    <p class="mt-6 text-gray-600 leading-relaxed">
-      Autonomy trades transparency for throughput. That trade is sometimes worth
-      making — but it should be made deliberately, and never on the code whose
-      results you intend to publish.
-    </p>
-
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Two traps, whatever mode you are in</h2>
-
-    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
-      {traps.map(({ name, line, body }) => (
-        <div class="rounded-lg border border-gray-200 p-5">
-          <h3 class="font-semibold text-gray-900">{name}</h3>
-          <p class="mt-1 text-sm font-medium text-blue-600">{line}</p>
-          <p class="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
-        </div>
-      ))}
-    </div>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
 
@@ -153,9 +110,8 @@ const pillars = [
       In most software, a wrong choice costs you aesthetic debt. In scientific
       software, a wrong choice can cost you
       <strong class="text-gray-900">corrupted results that still pass CI</strong>
-      — a green test suite over a physically meaningless answer. The failures
-      that do this are domain failures, and general-purpose tooling is not
-      looking for them:
+      — a green test suite sitting on top of a physically meaningless answer. The
+      failures that do this are domain failures, and a linter will not find them:
     </p>
 
     <ul class="mt-4 flex flex-wrap gap-2">
@@ -164,33 +120,150 @@ const pillars = [
       ))}
     </ul>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">What Scientific Agentic Engineering adds</h2>
-
-    <p class="mt-3 text-gray-600 leading-relaxed">
-      General-purpose AI is powerful; scientific work needs domain-specific
-      safeguards. The framework organizes those safeguards under three
-      principles:
+    <p class="mt-4 text-gray-600 leading-relaxed">
+      Reproducibility erodes the same way, and more quietly. A result nobody can
+      reconstruct — because nobody recorded which parts an agent wrote, or who
+      approved them — is a result that cannot be defended.
     </p>
 
-    <dl class="mt-5 space-y-4">
-      {pillars.map(({ name, body }) => (
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Two reasonable reactions</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      Research software has not settled on these tools. Some teams adopted them
+      quickly, and are finding that review practices built to catch human mistakes
+      do not catch machine ones. Others have stayed away, on the reasonable
+      grounds that a plausible wrong answer is worse than no answer at all.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      This project is aimed at both. The caution is well founded and the
+      productivity is real, and the work is figuring out what has to be in place
+      before you can have both at once.
+    </p>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Five ways people work with AI on code</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      These arrived roughly in the order below, which is why they are often
+      described as stages. They are not stages, and further down the list is not
+      better. Each one arrived without retiring the one before it, and most people
+      move between them by task — laying groundwork with an agent and then going
+      back over the details by hand is an ordinary afternoon, not a regression.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      It also matters that
+      <strong class="text-gray-900">agency is a matter of degree, not a category</strong>.
+      A coding assistant such as Claude Code or Codex can be driven at any of the
+      last three levels. What separates them is how you use the tool, not which
+      tool you installed.
+    </p>
+
+    <div class="mt-6 space-y-5">
+      {modes.map(({ name, where, what }, i) => (
+        <div class="border-l-4 border-blue-100 pl-5 py-1">
+          <div class="flex items-baseline gap-3 flex-wrap">
+            <h3 class="font-semibold text-gray-900">
+              <span class="text-blue-600 tabular-nums">{i + 1}.</span> {name}
+            </h3>
+            <span class="text-xs uppercase tracking-wide text-gray-400">{where}</span>
+          </div>
+          <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
+        </div>
+      ))}
+    </div>
+
+    <p class="mt-6 text-gray-600 leading-relaxed">
+      What changes down the list is how much of the work proceeds without an
+      active decision from you. Watching a session scroll past is not the same as
+      deciding anything, and once sub-agents are running in parallel, keeping up
+      with all of them becomes considerably more taxing. Where to spend your
+      attention, and what to check when you cannot spend it, is what the
+      <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a>
+      is for.
+    </p>
+
+    <h3 class="mt-10 font-semibold text-gray-900">Two risks that do not depend on which one you pick</h3>
+
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {traps.map(({ name, line, body }) => (
+        <div class="rounded-lg border border-gray-200 p-5">
+          <h4 class="font-semibold text-gray-900">{name}</h4>
+          <p class="mt-1 text-sm font-medium text-blue-600">{line}</p>
+          <p class="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is building</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      The fellowship runs from April 2026 to April 2027 and produces four things.
+    </p>
+
+    <dl class="mt-5 space-y-5">
+      {deliverables.map(({ name, when, body }) => (
         <div>
-          <dt class="font-semibold text-gray-900">{name}</dt>
+          <dt class="flex items-baseline gap-3 flex-wrap">
+            <span class="font-semibold text-gray-900">{name}</span>
+            <span class="text-xs uppercase tracking-wide text-gray-400">{when}</span>
+          </dt>
           <dd class="mt-1 text-gray-600 leading-relaxed">{body}</dd>
         </div>
       ))}
     </dl>
 
     <p class="mt-6 text-gray-600 leading-relaxed">
-      The principles are tool-agnostic on purpose — products change faster than
-      practices. The
-      <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a>
-      develops them in depth, and the
-      <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a>
-      defines the vocabulary used throughout.
+      The aim throughout is to turn broad AI capability into reliable development
+      instruments: tools a scientist can point at real work and trust the output
+      of, for reasons they can articulate.
     </p>
 
-    <div class="mt-12 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is not</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      This is a project about guidance and education, not a software product. It
+      is worth being specific about that, because the alternative is letting
+      people find out the hard way:
+    </p>
+
+    <ul class="mt-4 space-y-3">
+      {notScope.map(s => (
+        <li class="flex gap-3 text-gray-600 leading-relaxed">
+          <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300" aria-hidden="true"></span>
+          <span>{s}</span>
+        </li>
+      ))}
+    </ul>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Why the framework is tool-agnostic</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      This project’s subject matter changes underneath it. MCP specifications take
+      breaking changes. Agent frameworks get rewritten. Tools named in a document
+      written today may be deprecated or superseded before the fellowship ends.
+    </p>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      So the framework commits to principles rather than products. Validation
+      loops, human oversight, and domain-specific safeguards are claims about what
+      has to be true of a workflow, not about which vendor you buy from, and they
+      should still hold once the current generation of tools is gone. Where
+      specific tools appear, they appear as examples.
+    </p>
+
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where to go next</h2>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      The
+      <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a>
+      develops the principles in depth and says where the checks go. The
+      <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a>
+      defines the vocabulary used across the project, including every term on this
+      page.
+    </p>
+
+    <div class="mt-8 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
       <p class="text-sm text-gray-600 leading-relaxed">
         <strong class="text-gray-900">A note on institutional policy.</strong>
         Always follow your institution’s current guidance on AI-tool use —
