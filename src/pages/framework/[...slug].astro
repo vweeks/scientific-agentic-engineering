@@ -3,7 +3,7 @@ import FrameworkLayout from '../../layouts/FrameworkLayout.astro';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const entries = await getCollection('framework');
+  const entries = (await getCollection('framework')).filter(entry => !entry.data.draft);
   return entries.map(entry => ({
     params: { slug: entry.id },
     props: { entry },
