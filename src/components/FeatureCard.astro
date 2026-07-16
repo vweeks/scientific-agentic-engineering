@@ -8,21 +8,27 @@ interface Props {
 }
 
 const { title, description, href, available = true, eta } = Astro.props;
+
+const isLink = Boolean(href && available);
+const Wrapper = isLink ? 'a' : 'div';
 ---
 
-<div class:list={[
-  'rounded-lg border p-6',
-  available ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50',
-]}>
+<Wrapper
+  href={isLink ? href : undefined}
+  class:list={[
+    'group flex h-full flex-col rounded-lg border p-6 transition-colors',
+    available ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50',
+    isLink
+      ? 'hover:border-blue-400 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2'
+      : '',
+  ]}
+>
   <h3 class:list={[
-    'text-lg font-semibold',
+    'text-lg font-semibold transition-colors',
     available ? 'text-gray-900' : 'text-gray-400',
+    isLink ? 'group-hover:text-blue-600' : '',
   ]}>
-    {href && available ? (
-      <a href={href} class="hover:text-blue-600 transition-colors">{title}</a>
-    ) : (
-      title
-    )}
+    {title}
   </h3>
   <p class:list={[
     'mt-2 text-sm',
@@ -31,8 +37,8 @@ const { title, description, href, available = true, eta } = Astro.props;
     {description}
   </p>
   {!available && (
-    <span class="mt-3 inline-block text-xs font-medium text-gray-400 uppercase tracking-wide">
+    <span class="mt-auto pt-4 inline-block text-xs font-medium text-gray-400 uppercase tracking-wide">
       {eta ? `Expected ${eta}` : 'Coming soon'}
     </span>
   )}
-</div>
+</Wrapper>
