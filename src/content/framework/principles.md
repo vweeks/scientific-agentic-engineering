@@ -27,7 +27,7 @@ Human review is a finite resource, and spreading it evenly wastes it. Reading ev
 
 Two kinds are almost always worth it. The first is **decisions that later work inherits without re-examining** — an interface, a data layout, a units convention — because a wrong one is not one mistake but the silent premise of everything built on top of it. The second is **decisions that steer the agent itself** — the framing of the task, the assumptions it is told to make — because a wrong assumption early pollutes everything that follows it, and it does so fluently.
 
-Which decisions those are is project-specific, and the framework treats the judgment at length elsewhere. The general rule here is cheap: the least expensive checkpoint available is a plan you approve before any code exists, because a wrong plan costs a sentence to correct and a wrong implementation costs a day. Put a human decision in front of anything that is hard to undo, and let the rest run lighter.
+Which decisions those are is project-specific; the [loop's gate stage](/scientific-agentic-engineering/framework/the-loop/) and the [pattern catalog](/scientific-agentic-engineering/framework/patterns/) come back to the judgment. The general rule here is cheap: the least expensive checkpoint available is a plan you approve before any code exists, because a wrong plan costs a sentence to correct and a wrong implementation costs a day. Put a human decision in front of anything that is hard to undo, and let the rest run lighter.
 
 ## Domain-specific safeguards
 

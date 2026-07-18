@@ -7,7 +7,7 @@ draft: false
 
 # Structuring the workflow
 
-The loop says what happens at each stage. This chapter is about where those things live. A workflow gives you four places to put structure — the project's standing instructions, the procedures an assistant can run, its access to real systems, and the shape of the agents themselves — and a safeguard that lives in one of them survives long sessions, new collaborators, and ordinary forgetting. A safeguard that lives in somebody's habits does not.
+[The loop](/scientific-agentic-engineering/framework/the-loop/) says what happens at each stage. This chapter is about where those things live. A workflow gives you four places to put structure — the project's standing instructions, the procedures an assistant can run, its access to real systems, and the shape of the agents themselves — and a safeguard that lives in one of them survives long sessions, new collaborators, and ordinary forgetting. A safeguard that lives in somebody's habits does not.
 
 The four go by different names in every current ecosystem, and the names will not last. The functions will, so the chapter is organized around the functions, with today's names noted as examples.
 
@@ -19,7 +19,7 @@ What belongs in it is exactly what you would otherwise repeat at the start of ev
 
 - **Domain conventions** — the units convention, the coordinate system, the tolerances that count as passing, the datasets that are authoritative.
 - **Constraints** — what must never be regenerated, which directories are off limits, which results are frozen.
-- **The gates** — the actions that always require a human decision, named in advance so the assistant stops for them rather than assuming silence is a yes.
+- **The gates** — the actions that always require a human decision, named in advance so the assistant stops for them rather than discovering them mid-task.
 
 Standing instructions bloat the way contexts do, and for the same reason: adding a line is easy and removing one requires a decision. The file is read at the start of every session, so every line taxes all of them. Keep it short enough that a new collaborator would actually read it, and treat a line that no longer earns its place as a bug.
 
@@ -47,7 +47,7 @@ For scientific work, four design choices do most of the good:
 An agent is shaped by three things: its role, its context, and its tools. Structural guidance for agents is mostly the discipline of keeping those three matched.
 
 - **One role per agent.** The agent that implements should not be the agent that judges the implementation. This is not etiquette; it is the isolation that makes the critique and verify stages mean something. A reviewer that shares the author's context inherits the author's blind spots.
-- **Fresh context for critics.** The reviewing agent gets the plan or the diff — not the conversation that produced it. What a clean reader questions is what the working context had stopped seeing.
+- **Fresh context for critics.** The reviewing agent gets the plan or the diff — not the conversation that produced it. The value of a critic is exactly what it arrives without.
 - **Tools matched to role.** A reviewer needs to read; it rarely needs to write, and it never needs to deploy. Granting every agent every tool converts each one into a full-surface risk for no gain in capability.
 
 There is also a temptation worth naming: more agents is not more rigor. Every additional agent is another context to keep honest and another output to verify. Add one when isolation buys you a check you cannot get otherwise — a critic with no memory of the reasoning, parallel work that must not share state — and not because an org chart of agents feels like a team.
@@ -56,4 +56,4 @@ There is also a temptation worth naming: more agents is not more rigor. Every ad
 
 Putting the two chapters together: **frame** is served by standing instructions, which hold the constraints a frame must not violate; **plan** and **critique** by agent shape, since a plan reviewed in a fresh context is the cheapest real check in the whole loop; **implement** by skills and scoped permissions, which bound what a session can quietly do; **verify** by skills backed by real-system access, so checks run against the actual data and can actually fail; **gate** by the standing list of actions that require a human decision; and **record** by provenance that the tooling returns as a side effect of doing the work.
 
-None of this requires a particular vendor, and most of it does not require agents at all. The smallest viable version is one person in a chat window with a project instruction file, a directory of check scripts that fail loudly, and the discipline to paste in real data instead of letting the model remember it. The structure scales up from there; the functions do not change.
+None of this requires a particular vendor, and most of it does not require agents at all. The smallest viable version is one person in a chat window with a project instruction file, a directory of check scripts that fail loudly, and the discipline to paste in real data instead of letting the model remember it. The structure scales up from there; the functions do not change. The [pattern catalog](/scientific-agentic-engineering/framework/patterns/) breaks the same material into practices you can adopt one at a time.

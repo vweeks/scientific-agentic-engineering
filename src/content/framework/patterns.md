@@ -23,7 +23,7 @@ Ask for the plan, not the code. A plan is short enough to actually read, cheap e
 
 *Stage: critique. Counters: context bloat, self-confirmation, blind spots baked into the framing.*
 
-Have the plan examined by a reader that did not write it and cannot see the conversation that produced it — a colleague, or a clean assistant session given only the plan. An author re-reading its own reasoning tends to confirm it; a reader without the reasoning is in the position a referee is in, and asks the questions the working context stopped asking.
+Have the plan examined by a reader that did not write it and cannot see the conversation that produced it — a colleague, or a clean assistant session given only the plan. Re-reading your own reasoning mostly confirms it; a reader who has only the plan is in the position a referee is in, obliged to judge the argument that is actually on the page.
 
 **When it is missing:** the plan is reviewed by scrolling up. Everything looks right, because the same context that produced the assumptions is being asked whether the assumptions look right.
 
@@ -47,7 +47,7 @@ Before trusting any check, feed it an answer you know is wrong and watch it fail
 
 *Stage: verify, gate. Counters: unit confusion, precision loss, subtle physics violations.*
 
-Where a physical condition can be stated, enforce it as a precondition that stops the work — an assertion on conservation within a justified tolerance, a stability criterion checked before the expensive computation starts, a bounds check on a quantity that has a physical range. A check that halts is worth an order of magnitude more than a warning that scrolls past, because a halt cannot be unread.
+Where a physical condition can be stated, enforce it as a precondition that stops the work — an assertion on conservation within a justified tolerance, a stability criterion checked before the expensive computation starts, a bounds check on a quantity that has a physical range. A check that halts is worth more than a warning that scrolls past, because a halt cannot be unread.
 
 **When it is missing:** the diagnostic that would have caught the violation exists, and prints its complaint into a log nobody reads, under output nobody scrolls through, while the pipeline continues to the end and delivers a number.
 

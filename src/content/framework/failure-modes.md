@@ -1,6 +1,6 @@
 ---
 title: "How scientific code fails"
-description: "The specific failures the principles defend against — domain errors the agent gets wrong, and process errors that let a wrong answer through — and where in the loop each should be caught."
+description: "The specific failures the principles defend against — failures where the agent gets the science wrong, and process failures that let a wrong answer through — and where in the loop each should be caught."
 order: 3
 draft: false
 ---
@@ -33,6 +33,7 @@ These are errors in the way of working — the science might have been checkable
 - **False success** — a check that reports success without testing anything: a tolerance loose enough to pass on any input, a gate that returns green when the job it was watching stalled, a suite that runs the code without asserting on the result. The most dangerous failure in the catalog, because it actively certifies the wrong answer.
 - **Hallucinated APIs, physics, or data** — an agent confidently using a function, a flag, a dataset, or a physical relationship that does not exist, or does not mean what it was used to mean. Fluent and specific, and therefore easy to accept.
 - **Context bloat** — long sessions drift as the window fills; details established early get buried, and nothing warns you when they do.
+- **Scope drift** — the work wanders from the task that was framed. An agent asked to fix one function returns a refactored module, and the change nobody asked for becomes the change nobody reviews.
 - **Over-trust** — accepting fluent output because it is fluent. Not a property of the model so much as of the reader, which is why it is on this list.
 
 This taxonomy is larger than the four-item list this project started from, and it is drawn from observed episodes across real projects rather than imagined in advance. It is not meant to be complete — the point is not to enumerate every way code can be wrong, but to name the failures that a general-purpose workflow does not look for, so that a scientific one can.
@@ -41,10 +42,11 @@ This taxonomy is larger than the four-item list this project started from, and i
 
 Naming a failure is only useful if you know where to stand to catch it. Each maps to a stage of [the loop](/scientific-agentic-engineering/framework/the-loop/):
 
-- **Unit confusion, precision loss, physics violations** — caught by a domain check at the **verify** stage, and better still by a **pre-gate** that refuses to run when a physical condition is violated.
+- **Unit confusion, precision loss, physics violations** — caught by a domain check at the **verify** stage, at best one that refuses to run at all when a physical condition is violated.
 - **Visualization misinterpretation** — caught at **verify**, by checking the figure against the data it claims to show rather than by looking at whether a figure was produced.
 - **False success** — caught by making the **verify** check adversarial: a reviewer with fresh context whose job is to make the test fail, not confirm it passes.
 - **Hallucinated APIs, physics, or data** — caught early, at **plan** and **critique**, before the fabrication is built on; and at **verify** by running against the real thing instead of the agent's memory of it.
-- **Context bloat and over-trust** — caught structurally, by **isolation** (a fresh context that never saw the reasoning it is checking) and by the **gate** (a human deciding, rather than watching).
+- **Scope drift** — caught at **plan**, where the scope is fixed, and contained at **implement** by holding the work to the plan it was approved under.
+- **Context bloat and over-trust** — caught structurally: by fresh context at **critique** and **verify** (a reader that never saw the reasoning it is checking), and at the **gate** (a human deciding, rather than watching).
 
 The mapping is the argument for the loop: a failure has a place it is cheapest to catch, and a workflow organized around those places catches more of them than diligence applied evenly.

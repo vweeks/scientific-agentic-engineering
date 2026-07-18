@@ -9,7 +9,7 @@ draft: false
 
 The principles describe what has to be true. This is the process that makes them true, one stage at a time. It is not a new invention — it is the shape careful practitioners already converge on, written down so it can be taught and reused. Read it as a default to adapt, not a ceremony to perform: a two-line fix does not need seven stages, but knowing the full loop tells you which stages you are choosing to skip.
 
-Each stage below names the principle that governs it, the failures it is positioned to catch, and — because most people reading this are working alone in a single chat window, not conducting a team of agents — what the stage looks like when you are the only human and there is one assistant.
+Each stage below names the principle that governs it, the failures it is positioned to catch, and — because many readers will be working alone in a single chat window, not conducting a team of agents — what the stage looks like when you are the only human and there is one assistant.
 
 ## Frame
 
@@ -61,7 +61,7 @@ At the points that are hard to undo, a human decides — not watches. Watching a
 
 ## Record
 
-Keep the record that would let someone rebuild the result: the plan that was approved, the checks that were run, the design decisions that shaped the work. A result nobody can reconstruct is a result that cannot be defended, and in science that is the same as a result that is wrong. Version control already remembers who wrote each line; what nothing records by default is *why* — the approach, the assumptions, the basis on which a check was accepted.
+Keep the record that would let someone rebuild the result: the plan that was approved, the checks that were run, the design decisions that shaped the work. A result nobody can reconstruct is a result that cannot be defended. Version control already remembers who wrote each line; what nothing records by default is *why* — the approach, the assumptions, the basis on which a check was accepted.
 
 - **Principle:** all three — provenance is what makes the loop auditable after the fact.
 - **Catches:** the slow erosion of reproducibility, which fails quietly and later than everything else.
