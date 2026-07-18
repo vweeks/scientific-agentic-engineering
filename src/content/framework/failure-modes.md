@@ -13,7 +13,7 @@ The principles are a defense. This chapter is what they defend against.
 
 Almost every failure that matters here has the same signature: the program runs, the tests pass, and the number it prints is wrong. There is no crash to trace and no red mark to chase. That is what makes scientific code the hard case. In most software a wrong answer is usually apparent before long — a page renders wrong, a request errors, a user complains. A wrong scientific result can sit inside a correct-looking pipeline indefinitely, because the only thing that would reveal it is a domain check nobody ran.
 
-Two properties of the tools make this worse rather than better. An agent's output is *fluent* — it reads as confident and well-formed whether or not it is right, so tone carries no information about correctness. And an agent is *plausible by construction* — it produces the answer that looks like the answer, which is precisely the failure mode a discipline built on plausibility cannot self-correct. The check has to come from somewhere other than the thing that produced the answer.
+Two properties of the tools make this worse rather than better. An agent's output is *fluent* — it reads as confident and well-formed whether or not it is right, so tone carries no information about correctness. And an agent is *plausible by construction* — it produces the answer that looks like the answer, which is precisely the failure mode a system built on plausibility cannot self-correct. The check has to come from somewhere other than the thing that produced the answer.
 
 It is worth being clear about scope. Other software has bugs like these too. What is distinctive about scientific work is that these are *the* failures to guard against, they are common enough to plan around, and the general-purpose safety net is not positioned to catch any of them.
 
@@ -46,7 +46,7 @@ Naming a failure is only useful if you know where to stand to catch it. Each map
 - **Visualization misinterpretation** — caught at **verify**, by checking the figure against the data it claims to show rather than by looking at whether a figure was produced.
 - **False success** — caught by making the **verify** check adversarial: a reviewer with fresh context whose job is to make the test fail, not confirm it passes.
 - **Hallucinated APIs, physics, or data** — caught early, at **plan** and **critique**, before the fabrication is built on; and at **verify** by running against the real thing instead of the agent's memory of it.
-- **Scope drift** — caught at **plan**, where the scope is fixed, and contained at **implement** by holding the work to the plan it was approved under.
+- **Scope drift** — caught at **frame**, where the scope is fixed, and contained at **implement** by holding the work to the plan it was approved under.
 - **Context bloat and over-trust** — caught structurally: by fresh context at **critique** and **verify** (a reader that never saw the reasoning it is checking), and at the **gate** (a human deciding, rather than watching).
 
 The mapping is the argument for the loop: a failure has a place it is cheapest to catch, and a workflow organized around those places catches more of them than diligence applied evenly.

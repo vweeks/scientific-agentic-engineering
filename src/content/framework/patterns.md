@@ -15,7 +15,7 @@ The illustrations in this draft are composites: realistic situations assembled f
 
 *Stage: frame, plan. Counters: hallucinated APIs and physics, scope drift, the wrong problem solved well.*
 
-Ask for the plan, not the code. A plan is short enough to actually read, cheap enough to discard, and it exposes the assumptions — the API the assistant believes exists, the physics it believes applies — before anything is built on them. Approving an approach is a decision; unwinding an implementation is a project.
+Ask for the plan, not the code. A plan is short enough to actually read, cheap enough to discard, and it exposes the assumptions — the API taken to exist, the physics taken to apply — before anything is built on them. Approving an approach is a decision; unwinding an implementation is a project.
 
 **When it is missing:** the first artifact you see is four hundred lines of plausible code. Somewhere in it is an assumption you never granted, and reading the code will not surface it, because the code is the assumption, fluently elaborated.
 
@@ -65,7 +65,7 @@ Name, before the work starts, the actions that require a human decision — the 
 
 File the plan that was approved, the checks that ran, and the basis on which the result was accepted — alongside the code, where version control keeps them. Commits already record what changed and who changed it; the trail that goes missing is *why*: the approach that was chosen, the assumptions it rested on, the evidence that convinced someone it was right. That is the part a defense of the result will need, and the part nothing records by default.
 
-**When it is missing:** six months later the result is questioned. The code is still there; the reasoning is in a chat session nobody kept, and the honest answer to "why is this right?" is that it passed at the time. A result nobody can reconstruct is a result that cannot be defended.
+**When it is missing:** six months later the result is questioned. The code is still there; the reasoning is in a chat session nobody kept, and the honest answer to "why is this right?" is that it passed at the time. What cannot be reconstructed cannot be defended.
 
 ## Extending the catalog
 

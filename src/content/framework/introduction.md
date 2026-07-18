@@ -7,7 +7,7 @@ draft: false
 
 # Introduction
 
-Scientific Agentic Engineering is a methodology for integrating AI coding agents into scientific software development workflows. Research software has not settled on these tools, and there is no single story about where it stands: practitioners differ in how far they have adopted them, how much they trust them, and how much of the pace of change they have had attention to follow. A plausible wrong answer is a reasonable thing to be wary of. This framework is meant to serve that whole range — techniques for using these tools effectively while keeping their failures out of the results, wherever you are starting from.
+Scientific Agentic Engineering is a methodology for integrating AI coding agents into scientific software development workflows. Research software has not settled on these tools, and there is no single story about where it stands: practitioners differ in how far they have adopted them, how much they trust them, and how closely they have been able to follow the pace of change. Wariness of a tool that can produce a plausible wrong answer is reasonable. This framework is meant to serve that whole range — techniques for using these tools effectively while keeping their failures out of the results, wherever you are starting from.
 
 The problem it addresses is narrow and specific. AI agents got good at writing code quickly, and they fail in a way that matters more in science than almost anywhere else: they produce results that are wrong but survive every check a project already runs. The code runs, the tests pass, and the number it prints is physically meaningless. A general-purpose workflow is not looking for that. A scientific one has to.
 
@@ -31,7 +31,7 @@ The draft is organized to be read in order, but each chapter stands on its own.
 
 Where this draft names a specific tool, it does so as an example; the claims are meant to outlast any particular one.
 
-If you are new to the vocabulary — agents, skills, MCP servers, validation loops — the [glossary](/scientific-agentic-engineering/glossary/) defines the project's core vocabulary, and the [overview](/scientific-agentic-engineering/overview/) sets up why scientific code is the hard case.
+If you are new to the vocabulary — agents, skills, MCP servers, validation loops — the [glossary](/scientific-agentic-engineering/glossary/) defines the project's core terms, and the [overview](/scientific-agentic-engineering/overview/) sets up why scientific code is the hard case.
 
 ## A note on the evidence
 
