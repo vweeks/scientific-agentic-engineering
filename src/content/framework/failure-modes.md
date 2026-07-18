@@ -11,7 +11,7 @@ The principles are a defense. This chapter is what they defend against.
 
 ## The signature
 
-Almost every failure that matters here has the same signature: the program runs, the tests pass, and the number it prints is wrong. There is no crash to trace and no red mark to chase. That is what makes scientific code the hard case. In most software a wrong answer eventually announces itself — a page renders wrong, a request errors, a user complains. A wrong scientific result can sit inside a correct-looking pipeline indefinitely, because the only thing that would reveal it is a domain check nobody ran.
+Almost every failure that matters here has the same signature: the program runs, the tests pass, and the number it prints is wrong. There is no crash to trace and no red mark to chase. That is what makes scientific code the hard case. In most software a wrong answer is usually apparent before long — a page renders wrong, a request errors, a user complains. A wrong scientific result can sit inside a correct-looking pipeline indefinitely, because the only thing that would reveal it is a domain check nobody ran.
 
 Two properties of the tools make this worse rather than better. An agent's output is *fluent* — it reads as confident and well-formed whether or not it is right, so tone carries no information about correctness. And an agent is *plausible by construction* — it produces the answer that looks like the answer, which is precisely the failure mode a discipline built on plausibility cannot self-correct. The check has to come from somewhere other than the thing that produced the answer.
 

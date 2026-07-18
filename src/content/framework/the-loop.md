@@ -61,7 +61,7 @@ At the points that are hard to undo, a human decides — not watches. Watching a
 
 ## Record
 
-Keep the record of what was decided, what the agent produced, and who approved it. A result nobody can reconstruct — because nobody recorded which parts an agent wrote, or on what basis they were accepted — is a result that cannot be defended, and in science that is the same as a result that is wrong.
+Keep the record that would let someone rebuild the result: the plan that was approved, the checks that were run, the design decisions that shaped the work. A result nobody can reconstruct is a result that cannot be defended, and in science that is the same as a result that is wrong. Version control already remembers who wrote each line; what nothing records by default is *why* — the approach, the assumptions, the basis on which a check was accepted.
 
 - **Principle:** all three — provenance is what makes the loop auditable after the fact.
 - **Catches:** the slow erosion of reproducibility, which fails quietly and later than everything else.
@@ -71,4 +71,4 @@ Keep the record of what was decided, what the agent produced, and who approved i
 
 The stages are not a pipeline you traverse once. Verification sends you back to plan; a failed gate sends you back to implement; a new goal restarts the frame. The value is in the ordering: each failure from the [previous chapter](/scientific-agentic-engineering/framework/failure-modes/) has a stage where it is cheapest to catch, and running the stages in order puts a check between each failure and the place it would otherwise surface.
 
-This loop is also the spine of what comes next in the project. The Reference Workflow exercise is this loop, run once, on a real scientific task. The pattern catalog — in progress — tags each named practice by the stage it belongs to. And the structural guidance still to come is, in large part, about how to shape agents, skills, and MCP servers so that each stage has something concrete to run.
+This loop is also the spine of what comes next. The Reference Workflow exercise is this loop, run once, on a real scientific task. The [next chapter](/scientific-agentic-engineering/framework/structure/) is about how to shape a workflow's standing structure — instructions, skills, access to real systems, the agents themselves — so that each stage has something concrete to run. And the [pattern catalog](/scientific-agentic-engineering/framework/patterns/) tags each named practice by the stage it belongs to.
