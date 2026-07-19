@@ -1,0 +1,11 @@
+name = "sae-overview-poll"
+main = "index.js"
+compatibility_date = "2026-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sae-overview-poll"
+database_id = "32128b10-1eef-491e-b874-3556e3247a3a"
+
+[observability]
+enabled = true
