@@ -7,29 +7,29 @@ const modes = [
   {
     name: 'Tab-complete',
     where: 'In your editor',
-    what: 'Your editor finishes the line you were already writing.',
+    what: 'Your editor suggests the rest of the line or block it predicts you are writing, and you accept it or keep typing.',
   },
   {
     name: 'Chat assistant',
     where: 'In a chat window',
-    what: 'You describe a problem in a chat window and copy/paste the answer into your code by hand.',
+    what: 'You work in a separate chat window — describing the problem, pasting in code or an error message, copying the answer back by hand. Nothing moves between the chat and your editor on its own.',
   },
   {
     name: 'Tool use',
     where: 'In a coding assistant',
     what:
-      'The assistant calls tools instead of guessing — reading a file, querying a dataset, running a command. Plugins, MCP servers, and skills are all ways of handing it a tool.',
+      'The assistant runs real tools rather than working only from what it can recall — reading a file, querying a dataset, running a command. Skills package routine commands, MCP servers standardize access to outside systems and data, and plugins or a marketplace make either easy to install.',
   },
   {
     name: 'Planning mode',
     where: 'In a coding assistant',
-    what: 'The assistant proposes what it intends to do, and waits for you before it does it.',
+    what: 'From a goal you state, the assistant works out how it would reach it and shows you the plan before acting. You decide whether it is what you want and who carries it out — which need not be the same assistant that drew up the plan.',
   },
   {
     name: 'Autonomous agent teams',
     where: 'In a coding assistant',
     what:
-      'Long-running agents work broadly on their own and coordinate sub-agents, with few checkpoints before they act.',
+      'Long-running agents take on broad, multi-step tasks with little supervision, breaking the work apart and coordinating sub-agents to do it. You set the goal and check the result; comparatively little sits in between. It is the most convenient way to work and the easiest place to lose track of what was actually decided.',
   },
 ];
 
@@ -51,8 +51,15 @@ const traps = [
     name: 'Over-trust',
     line: 'Fluent is not correct.',
     body:
-      'Confident output that is quietly wrong is the failure you will meet most often, and nothing in the tone of an answer tells you whether you are looking at one.',
+      'Confident output that is quietly wrong is an easy failure to miss, because nothing in the tone of an answer tells you whether you are looking at one.',
   },
+];
+
+const pollAxes = [
+  { key: 'familiarity', label: 'Familiarity', left: 'Just hearing about them', right: 'Know them well' },
+  { key: 'adoption', label: 'Adoption', left: 'Not using them', right: 'Part of daily work' },
+  { key: 'skepticism', label: 'Skepticism', left: 'Convinced', right: 'Deeply skeptical' },
+  { key: 'overwhelm', label: 'Keeping up', left: 'Comfortably', right: 'Underwater' },
 ];
 
 const deliverables = [
@@ -78,7 +85,7 @@ const deliverables = [
     name: 'Tutorials and workshops',
     when: 'January and April 2027',
     body:
-      '“Building Your First Scientific Agent,” followed by live sessions with real-time Q&A, recorded and published for anyone who could not attend.',
+      'Hands-on tutorials and live workshops on using AI agents effectively in scientific work, following the reference workflow, with real-time Q&A — recorded and published for anyone who cannot attend.',
   },
 ];
 
@@ -99,19 +106,32 @@ const notScope = [
 
     <p class="mt-4 text-lg text-gray-600 leading-relaxed">
       AI coding agents got good quickly, and research software teams are already
-      using them. The productivity is real. What has not kept pace is the practice
-      of checking their output — and scientific software fails in ways that
-      general-purpose tooling is not looking for.
+      using them. The productivity is real, and so is the risk: scientific
+      software can fail in ways that general-purpose tooling was never built to
+      catch.
+    </p>
+
+    <p class="mt-4 text-lg text-gray-600 leading-relaxed">
+      This fellowship teaches research software engineers to practice
+      AI-augmented engineering effectively and safely — not simply to check an
+      agent's output more carefully, but to work in ways that keep errors from
+      slipping through in the first place. That means covering the kinds of AI
+      tools available, the approaches that get the most out of them safely, and
+      the classes of error those approaches are designed to mitigate.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      In most software, a wrong choice costs you aesthetic debt. In scientific
-      software, a wrong choice can cost you
-      <strong class="text-gray-900">corrupted results that still pass CI</strong>
-      — a green test suite sitting on top of a physically meaningless answer. The
-      failures that do this are domain failures, and a linter will not find them:
+      When code makes a wrong assumption — whether a person or an agent
+      introduced it — the problem in ordinary software is usually apparent: the
+      build breaks, a test fails, something looks off on screen. Scientific
+      software can fail more quietly, and more dangerously. The code runs, the
+      tests pass, and you are left with <strong class="text-gray-900">corrupted results that still pass CI</strong> —
+      a green test suite sitting on top of a physically meaningless answer. These
+      are also the mistakes easiest to miss when reviewing AI-written code,
+      because they are often not mistakes you would introduce yourself, and so
+      not the kind review habits are tuned to catch:
     </p>
 
     <ul class="mt-4 flex flex-wrap gap-2">
@@ -122,23 +142,132 @@ const notScope = [
 
     <p class="mt-4 text-gray-600 leading-relaxed">
       Reproducibility erodes the same way, and more quietly. A result nobody can
-      reconstruct — because nobody recorded which parts an agent wrote, or who
-      approved them — is a result that cannot be defended.
+      reconstruct is a result that cannot be defended.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Two reasonable reactions</h2>
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where people stand</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      Research software has not settled on these tools. Some teams adopted them
-      quickly, and are finding that review practices built to catch human mistakes
-      do not catch machine ones. Others have stayed away, on the reasonable
-      grounds that a plausible wrong answer is worse than no answer at all.
+      Research software has not settled on these tools, and reactions to them do
+      not sort into two camps. People differ, among other things, in how
+      familiar they are with the tools, how far they have adopted them, how
+      skeptical they remain, and how
+      overwhelmed the pace of change leaves them feeling — some are simply
+      waiting for the whole thing to pass, the way earlier fads did.
     </p>
 
+    <div id="standing-poll" class="mt-6 rounded-lg border border-gray-200 p-5" hidden>
+      <div class="flex items-baseline justify-between gap-3 flex-wrap">
+        <h3 class="font-semibold text-gray-900">Place yourself</h3>
+        <span id="poll-count" class="text-xs uppercase tracking-wide text-gray-400"></span>
+      </div>
+      <p class="mt-1 text-sm text-gray-600 leading-relaxed">
+        Four sliders, no right answers. Responses are anonymous — what is
+        recorded is the slider positions and the day they arrived, nothing
+        that identifies you.
+      </p>
+      <div class="mt-5 space-y-5">
+        {pollAxes.map(({ key, label, left, right }) => (
+          <div>
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="text-xs text-gray-400">{left}</span>
+              <span class="text-sm font-medium text-gray-700">{label}</span>
+              <span class="text-xs text-gray-400 text-right">{right}</span>
+            </div>
+            <input type="range" min="0" max="100" value="50" data-axis={key} aria-label={label} class="mt-2 w-full accent-blue-600" />
+            <p class="mt-1 text-xs text-blue-600" data-avg-for={key} hidden></p>
+          </div>
+        ))}
+      </div>
+      <div class="mt-5 flex items-center gap-4 flex-wrap">
+        <button id="poll-submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600">
+          Add your response
+        </button>
+        <p id="poll-status" class="text-sm text-gray-500" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <script>
+      const ENDPOINT = 'https://sae-overview-poll.vweeks-c17.workers.dev';
+      const DONE_KEY = 'sae-overview-poll-done';
+      const root = document.getElementById('standing-poll');
+      const btn = document.getElementById('poll-submit');
+      const statusEl = document.getElementById('poll-status');
+
+      function showAverages(averages: Record<string, number | null> | null, count: number) {
+        const countEl = document.getElementById('poll-count');
+        if (countEl && count > 0) countEl.textContent = `${count} response${count === 1 ? '' : 's'} so far`;
+        if (!averages || !root) return;
+        for (const [axis, avg] of Object.entries(averages)) {
+          if (avg == null) continue;
+          const label = root.querySelector<HTMLElement>(`[data-avg-for="${axis}"]`);
+          if (label) {
+            label.textContent = `community average: ${avg}`;
+            label.hidden = false;
+          }
+        }
+      }
+
+      function markDone(message: string) {
+        if (!root || !btn || !statusEl) return;
+        root.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(i => (i.disabled = true));
+        (btn as HTMLButtonElement).disabled = true;
+        statusEl.textContent = message;
+      }
+
+      function alreadyDone(): boolean {
+        try { return localStorage.getItem(DONE_KEY) === '1'; } catch { return false; }
+      }
+
+      async function init() {
+        if (!root) return;
+        let data;
+        try {
+          const res = await fetch(`${ENDPOINT}/aggregate`);
+          if (!res.ok) return; // backend down or retired: leave the widget hidden
+          data = await res.json();
+        } catch { return; }
+        root.hidden = false;
+        showAverages(data.averages, data.count);
+        if (alreadyDone()) markDone('You have already added yours.');
+      }
+
+      async function submit() {
+        if (!root || !btn || !statusEl) return;
+        (btn as HTMLButtonElement).disabled = true;
+        const body: Record<string, number> = {};
+        root.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(i => {
+          if (i.dataset.axis) body[i.dataset.axis] = Number(i.value);
+        });
+        try {
+          const res = await fetch(`${ENDPOINT}/response`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (res.status === 429) {
+            markDone('Daily limit reached from your network — try again tomorrow.');
+            return;
+          }
+          if (!res.ok) throw new Error(String(res.status));
+          const data = await res.json();
+          try { localStorage.setItem(DONE_KEY, '1'); } catch { /* private mode */ }
+          showAverages(data.averages, data.count);
+          markDone('Thanks — added.');
+        } catch {
+          (btn as HTMLButtonElement).disabled = false;
+          statusEl.textContent = 'Could not reach the poll service — your response may not have been recorded.';
+        }
+      }
+
+      btn?.addEventListener('click', submit);
+      init();
+    </script>
+
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project is aimed at both. The caution is well founded and the
-      productivity is real, and the work is figuring out what has to be in place
-      before you can have both at once.
+      This project is aimed at that whole range, not one point on it. Wherever
+      you fall, the aim is to help: more fluency with the tools for those who
+      want it, and a disciplined skepticism for those who need it instead.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Five ways people work with AI on code</h2>
@@ -146,17 +275,17 @@ const notScope = [
     <p class="mt-3 text-gray-600 leading-relaxed">
       These arrived roughly in the order below, which is why they are often
       described as stages. They are not stages, and further down the list is not
-      better. Each one arrived without retiring the one before it, and most people
-      move between them by task — laying groundwork with an agent and then going
-      back over the details by hand is an ordinary afternoon, not a regression.
+      necessarily better. Each one arrived without retiring the one before it, and
+      many people move between them by task — laying groundwork with an agent and
+      then going back over the details by hand is an ordinary afternoon, not a
+      regression.
     </p>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      It also matters that
-      <strong class="text-gray-900">agency is a matter of degree, not a category</strong>.
+      It also matters that <strong class="text-gray-900">agency is a matter of degree, not a category</strong>.
       A coding assistant such as Claude Code or Codex can be driven at any of the
-      last three levels. What separates them is how you use the tool, not which
-      tool you installed.
+      last three levels. What separates them is how you use it, not which one you
+      installed.
     </p>
 
     <div class="mt-6 space-y-5">
@@ -220,9 +349,8 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is not</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This is a project about guidance and education, not a software product. It
-      is worth being specific about that, because the alternative is letting
-      people find out the hard way:
+      This is a project about guidance and education, not a software product. To
+      be specific about where the boundaries are:
     </p>
 
     <ul class="mt-4 space-y-3">
@@ -255,7 +383,7 @@ const notScope = [
     <p class="mt-3 text-gray-600 leading-relaxed">
       The <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> develops
       the principles in depth and says where the checks go. The <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a> defines
-      the vocabulary used across the project, including every term on this page.
+      the vocabulary used across the project, including the key terms on this page.
     </p>
 
     <div class="mt-8 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
