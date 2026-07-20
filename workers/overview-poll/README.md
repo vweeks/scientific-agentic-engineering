@@ -6,11 +6,18 @@ standing service beside it.
 
 ## Endpoints
 
-- `POST /response` — body `{familiarity, adoption, skepticism, overwhelm}`,
-  each an integer 0–100. Returns `{ok, count, averages}`. `429` after three
-  responses from one rate-limit key in a day.
-- `GET /aggregate` — `{count, averages}` (averages are `null` until the first
-  response). Edge-cached 60 seconds.
+- `POST /response` — body `{phase, familiarity, adoption, keepingup, trust}`;
+  the four axes are integers 0–100, `phase` is `"before"` or `"after"`
+  (defaults to `"before"` if omitted). Returns `{ok, phases}`. `429` after
+  three responses from one rate-limit key in a day.
+- `GET /aggregate` — `{phases: {before, after}}`, each `{count, averages}`
+  (per-axis averages are `null` until that phase has a response). Edge-cached
+  60 seconds.
+
+`phase` splits responses into two populations — `before` (baseline sentiment,
+the overview page) and `after` (a later post-engagement placement). No
+per-person id is stored, so individuals are never paired across phases; the
+comparison is population-to-population.
 
 CORS is allowlisted to `https://vweeks.github.io` and localhost dev ports.
 

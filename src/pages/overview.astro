@@ -55,12 +55,44 @@ const traps = [
   },
 ];
 
+// Four facets of where someone stands on AI-augmented development. Three run
+// "outward is the direction the project encourages"; trust is centered, where
+// the healthy target is the middle (calibrated), not an end. Keys are the
+// stable backend contract (see workers/overview-poll) — labels can change
+// without a Cloudflare edit; keys cannot.
 const pollAxes = [
-  { key: 'familiarity', label: 'Familiarity', left: 'Just hearing about them', right: 'Know them well' },
-  { key: 'adoption', label: 'Adoption', left: 'Not using them', right: 'Part of daily work' },
-  { key: 'skepticism', label: 'Skepticism', left: 'Convinced', right: 'Deeply skeptical' },
-  { key: 'overwhelm', label: 'Keeping up', left: 'Comfortably', right: 'Underwater' },
+  { key: 'familiarity', label: 'Familiarity', left: 'Unaware', right: 'Fluent', goal: 'up' },
+  { key: 'adoption', label: 'Adoption', left: 'Not using', right: 'Daily use', goal: 'up' },
+  { key: 'keepingup', label: 'Keeping up', left: 'Overwhelmed', right: 'Steady', goal: 'up' },
+  { key: 'trust', label: 'Trust', left: 'Blanket rejection', right: 'Blind trust', mid: 'Calibrated', goal: 'center' },
 ];
+const POLL_PHASE = 'before';
+const POLL_DEFAULT = 50;
+
+// Radar geometry, precomputed so the skeleton renders server-side (styles apply
+// cleanly, less client DOM-building). The client script recomputes the two data
+// polygons on interaction with the same math. "health" makes further-from-center
+// mean the encouraged direction on every axis, including centered trust.
+const R_CX = 130, R_CY = 130, R_R = 92;
+const radarPt = (i, hv) => {
+  const ang = (-90 + i * 90) * Math.PI / 180;
+  const r = (hv / 100) * R_R;
+  return [R_CX + r * Math.cos(ang), R_CY + r * Math.sin(ang)];
+};
+const radarHealth = (goal, v) => (goal === 'center' ? 100 - Math.abs(v - 50) * 2 : v);
+const fmtPts = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+const radarRings = [25, 50, 75, 100].map(f => fmtPts(pollAxes.map((_, i) => radarPt(i, f))));
+const radarSpokes = pollAxes.map((_, i) => radarPt(i, 100));
+const radarLabels = pollAxes.map((a, i) => {
+  const [x, y] = radarPt(i, 113);
+  return {
+    label: a.label, x, y,
+    anchor: i === 1 ? 'start' : i === 3 ? 'end' : 'middle',
+    baseline: i === 0 ? 'auto' : i === 2 ? 'hanging' : 'middle',
+  };
+});
+const radarInit = fmtPts(pollAxes.map((a, i) => radarPt(i, radarHealth(a.goal, POLL_DEFAULT))));
+const handleInit = pollAxes.map((a, i) => radarPt(i, radarHealth(a.goal, POLL_DEFAULT)));
 
 const deliverables = [
   {
@@ -128,10 +160,10 @@ const notScope = [
       build breaks, a test fails, something looks off on screen. Scientific
       software can fail more quietly, and more dangerously. The code runs, the
       tests pass, and you are left with <strong class="text-gray-900">corrupted results that still pass CI</strong> —
-      a green test suite sitting on top of a physically meaningless answer. These
-      are also the mistakes easiest to miss when reviewing AI-written code,
-      because they are often not mistakes you would introduce yourself, and so
-      not the kind review habits are tuned to catch:
+      a green test suite sitting on top of a physically meaningless answer. They
+      are also among the easiest to miss when reviewing AI-written code: an agent
+      does not make the mistakes you would make yourself, so they slip past the
+      instincts a reviewer leans on. A few of the classes worth watching for:
     </p>
 
     <ul class="mt-4 flex flex-wrap gap-2">
@@ -148,37 +180,66 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Where people stand</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      Research software has not settled on these tools, and reactions to them do
-      not sort into two camps. People differ, among other things, in how
-      familiar they are with the tools, how far they have adopted them, how
-      skeptical they remain, and how
-      overwhelmed the pace of change leaves them feeling — some are simply
-      waiting for the whole thing to pass, the way earlier fads did.
+      Research software has not settled on these tools, and reactions to them are
+      not binary. People differ, among other things, in how familiar they are
+      with the tools, how far they have adopted them, how well their trust is
+      calibrated, and how steady they feel amid the pace of change.
     </p>
 
-    <div id="standing-poll" class="mt-6 rounded-lg border border-gray-200 p-5" hidden>
+    <div id="standing-poll" class="mt-6 rounded-lg border border-gray-200 p-5" data-phase={POLL_PHASE} hidden>
       <div class="flex items-baseline justify-between gap-3 flex-wrap">
         <h3 class="font-semibold text-gray-900">Place yourself</h3>
         <span id="poll-count" class="text-xs uppercase tracking-wide text-gray-400"></span>
       </div>
       <p class="mt-1 text-sm text-gray-600 leading-relaxed">
-        Four sliders, no right answers. Responses are anonymous — what is
-        recorded is the slider positions and the day they arrived, nothing
-        that identifies you.
+        Anonymously rate your own sentiment toward AI-augmented development
+        tools. Whatever your starting point, this project hopes to widen your
+        coverage on every axis.
       </p>
-      <div class="mt-5 space-y-5">
-        {pollAxes.map(({ key, label, left, right }) => (
-          <div>
-            <div class="flex items-baseline justify-between gap-2">
-              <span class="text-xs text-gray-400">{left}</span>
-              <span class="text-sm font-medium text-gray-700">{label}</span>
-              <span class="text-xs text-gray-400 text-right">{right}</span>
+
+      <div class="poll-rig mt-5">
+        <div class="poll-radar-wrap">
+          <svg class="poll-radar" viewBox="-40 -40 340 340" role="img" aria-label="A four-axis shape of your response. Further from the center is the direction this project encourages: more familiarity, more adoption, steadier footing, and calibrated trust.">
+            <g>
+              {radarRings.map((pts, idx) => (
+                <polygon points={pts} class={idx === radarRings.length - 1 ? 'poll-ring poll-ring--outer' : 'poll-ring'} />
+              ))}
+              {radarSpokes.map(([x, y]) => (
+                <line x1={R_CX} y1={R_CY} x2={x.toFixed(1)} y2={y.toFixed(1)} class="poll-spoke" />
+              ))}
+            </g>
+            <polygon class="poll-poly-community" points="" hidden></polygon>
+            <polygon class="poll-poly-you" points={radarInit}></polygon>
+            <g class="poll-handles">
+              {handleInit.map(([x, y]) => (
+                <circle cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.5" class="poll-handle" />
+              ))}
+            </g>
+            <g>
+              {radarLabels.map(({ label, x, y, anchor, baseline }) => (
+                <text x={x.toFixed(1)} y={y.toFixed(1)} text-anchor={anchor} dominant-baseline={baseline}>{label}</text>
+              ))}
+            </g>
+          </svg>
+          <p class="poll-goal-note">Further out = the direction this project encourages.</p>
+        </div>
+
+        <div class="poll-axes">
+          {pollAxes.map(({ key, label, left, right, mid, goal }) => (
+            <div class={goal === 'center' ? 'poll-axis poll-axis--center' : 'poll-axis'}>
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="text-xs text-gray-400">{left}</span>
+                <span class="text-sm font-medium text-gray-700">{label}{mid && <span class="poll-target"> ▸ {mid}</span>}</span>
+                <span class="text-xs text-gray-400 text-right">{right}</span>
+              </div>
+              <input type="range" min="0" max="100" value={POLL_DEFAULT} data-axis={key} data-goal={goal}
+                     aria-label={mid ? `${label}: ${left} to ${right}, healthy at the center (${mid})` : `${label}: ${left} to ${right}`}
+                     class="poll-range mt-2 w-full" />
             </div>
-            <input type="range" min="0" max="100" value="50" data-axis={key} aria-label={label} class="mt-2 w-full accent-blue-600" />
-            <p class="mt-1 text-xs text-blue-600" data-avg-for={key} hidden></p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+
       <div class="mt-5 flex items-center gap-4 flex-wrap">
         <button id="poll-submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600">
           Add your response
@@ -187,87 +248,115 @@ const notScope = [
       </div>
     </div>
 
-    <script>
-      const ENDPOINT = 'https://sae-overview-poll.vweeks-c17.workers.dev';
-      const DONE_KEY = 'sae-overview-poll-done';
+    <script define:vars={{
+      axes: pollAxes.map(a => ({ key: a.key, goal: a.goal })),
+      phase: POLL_PHASE,
+      CX: R_CX, CY: R_CY, RAD: R_R,
+      endpoint: 'https://sae-overview-poll.vweeks-c17.workers.dev',
+    }}>
       const root = document.getElementById('standing-poll');
       const btn = document.getElementById('poll-submit');
       const statusEl = document.getElementById('poll-status');
+      const countEl = document.getElementById('poll-count');
 
-      function showAverages(averages: Record<string, number | null> | null, count: number) {
-        const countEl = document.getElementById('poll-count');
-        if (countEl && count > 0) countEl.textContent = `${count} response${count === 1 ? '' : 's'} so far`;
-        if (!averages || !root) return;
-        for (const [axis, avg] of Object.entries(averages)) {
-          if (avg == null) continue;
-          const label = root.querySelector<HTMLElement>(`[data-avg-for="${axis}"]`);
-          if (label) {
-            label.textContent = `community average: ${avg}`;
-            label.hidden = false;
-          }
-        }
-      }
+      if (root && btn) {
+        const polyYou = root.querySelector('.poll-poly-you');
+        const polyCommunity = root.querySelector('.poll-poly-community');
+        const handles = root.querySelectorAll('.poll-handle');
+        const ranges = root.querySelectorAll('input[type="range"]');
+        const DONE_KEY = `sae-overview-poll-done-${phase}`;
 
-      function markDone(message: string) {
-        if (!root || !btn || !statusEl) return;
-        root.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(i => (i.disabled = true));
-        (btn as HTMLButtonElement).disabled = true;
-        statusEl.textContent = message;
-      }
+        const health = (goal, v) => (goal === 'center' ? 100 - Math.abs(v - 50) * 2 : v);
+        const pt = (i, hv) => {
+          const a = (-90 + i * 90) * Math.PI / 180, r = (hv / 100) * RAD;
+          return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+        };
+        const pointsFrom = (valueOf) =>
+          axes.map((ax, i) => pt(i, health(ax.goal, valueOf(ax.key))).map(n => n.toFixed(1)).join(',')).join(' ');
 
-      function alreadyDone(): boolean {
-        try { return localStorage.getItem(DONE_KEY) === '1'; } catch { return false; }
-      }
+        const state = {};
+        axes.forEach((ax, i) => { state[ax.key] = Number(ranges[i].value); });
 
-      async function init() {
-        if (!root) return;
-        let data;
-        try {
-          const res = await fetch(`${ENDPOINT}/aggregate`);
-          if (!res.ok) return; // backend down or retired: leave the widget hidden
-          data = await res.json();
-        } catch { return; }
-        root.hidden = false;
-        showAverages(data.averages, data.count);
-        if (alreadyDone()) markDone('You have already added yours.');
-      }
-
-      async function submit() {
-        if (!root || !btn || !statusEl) return;
-        (btn as HTMLButtonElement).disabled = true;
-        const body: Record<string, number> = {};
-        root.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach(i => {
-          if (i.dataset.axis) body[i.dataset.axis] = Number(i.value);
-        });
-        try {
-          const res = await fetch(`${ENDPOINT}/response`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
+        function renderYou() {
+          polyYou.setAttribute('points', pointsFrom(k => state[k]));
+          axes.forEach((ax, i) => {
+            const [x, y] = pt(i, health(ax.goal, state[ax.key]));
+            handles[i].setAttribute('cx', x.toFixed(1));
+            handles[i].setAttribute('cy', y.toFixed(1));
           });
-          if (res.status === 429) {
-            markDone('Daily limit reached from your network — try again tomorrow.');
-            return;
-          }
-          if (!res.ok) throw new Error(String(res.status));
-          const data = await res.json();
-          try { localStorage.setItem(DONE_KEY, '1'); } catch { /* private mode */ }
-          showAverages(data.averages, data.count);
-          markDone('Thanks — added.');
-        } catch {
-          (btn as HTMLButtonElement).disabled = false;
-          statusEl.textContent = 'Could not reach the poll service — your response may not have been recorded.';
         }
-      }
+        ranges.forEach(inp => inp.addEventListener('input', () => {
+          state[inp.dataset.axis] = Number(inp.value);
+          renderYou();
+        }));
+        renderYou();
 
-      btn?.addEventListener('click', submit);
-      init();
+        function showCommunity(averages) {
+          if (!averages || !axes.every(ax => averages[ax.key] != null)) return;
+          polyCommunity.setAttribute('points', pointsFrom(k => averages[k]));
+          polyCommunity.hidden = false;
+        }
+        function setCount(n) {
+          if (countEl && n > 0) countEl.textContent = `${n} response${n === 1 ? '' : 's'} so far`;
+        }
+        function markDone(message) {
+          ranges.forEach(i => (i.disabled = true));
+          btn.disabled = true;
+          if (statusEl) statusEl.textContent = message;
+        }
+        const alreadyDone = () => {
+          try { return localStorage.getItem(DONE_KEY) === '1'; } catch { return false; }
+        };
+
+        async function init() {
+          let data;
+          try {
+            const res = await fetch(`${endpoint}/aggregate`);
+            if (!res.ok) return; // backend down or retired: leave the widget hidden
+            data = await res.json();
+          } catch { return; }
+          const mine = data?.phases?.[phase] || { count: 0, averages: null };
+          root.hidden = false;
+          setCount(mine.count);
+          if (alreadyDone()) { showCommunity(mine.averages); markDone('You have already added yours.'); }
+        }
+
+        async function submit() {
+          btn.disabled = true;
+          const body = { phase };
+          ranges.forEach(i => { if (i.dataset.axis) body[i.dataset.axis] = Number(i.value); });
+          try {
+            const res = await fetch(`${endpoint}/response`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            if (res.status === 429) {
+              markDone('Daily limit reached from your network — try again tomorrow.');
+              return;
+            }
+            if (!res.ok) throw new Error(String(res.status));
+            const data = await res.json();
+            try { localStorage.setItem(DONE_KEY, '1'); } catch { /* private mode */ }
+            const mine = data?.phases?.[phase];
+            if (mine) { setCount(mine.count); showCommunity(mine.averages); }
+            markDone('Thanks — added.');
+          } catch {
+            btn.disabled = false;
+            if (statusEl) statusEl.textContent = 'Could not reach the poll service — your response may not have been recorded.';
+          }
+        }
+
+        btn.addEventListener('click', submit);
+        init();
+      }
     </script>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project is aimed at that whole range, not one point on it. Wherever
-      you fall, the aim is to help: more fluency with the tools for those who
-      want it, and a disciplined skepticism for those who need it instead.
+      This project is aimed at that whole spread, not one point in it. Wherever
+      you land, the aim is the same push: more familiarity and adoption where
+      they help, trust that is calibrated rather than blind or absent, and enough
+      steadiness to keep up without drowning.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Five ways people work with AI on code</h2>
@@ -365,17 +454,18 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why the framework is tool-agnostic</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project’s subject matter changes underneath it. MCP specifications take
-      breaking changes. Agent frameworks get rewritten. Tools named in a document
-      written today may be deprecated or superseded before the fellowship ends.
+      The framework is tool-agnostic by design. Whichever tools you favor — and
+      however fast the landscape shifts around them — it aims at practices that
+      hold in general rather than at any single product. That keeps it useful as
+      tools come and go, and useful across the community rather than only to
+      whoever happens to share your stack.
     </p>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      So the framework commits to principles rather than products. Validation
-      loops, human oversight, and domain-specific safeguards are claims about what
-      has to be true of a workflow, not about which vendor you buy from, and they
-      should still hold once the current generation of tools is gone. Where
-      specific tools appear, they appear as examples.
+      That is why the framework commits to principles rather than products.
+      Validation loops, human oversight, and domain-specific safeguards are claims
+      about what has to be true of a workflow, not about which vendor you buy
+      from. Where specific tools appear, they appear as examples.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Where to go next</h2>
@@ -395,4 +485,42 @@ const notScope = [
       </p>
     </div>
   </div>
+
+  <style is:global>
+    /* "Where people stand" poll — namespaced under #standing-poll so nothing
+       leaks to the rest of the page. Palette matches the site's gray/blue. */
+    #standing-poll .poll-rig { display: grid; gap: 1.3rem; align-items: center; }
+    @media (min-width: 640px) {
+      #standing-poll .poll-rig { grid-template-columns: 250px 1fr; gap: 1.5rem; }
+    }
+    #standing-poll .poll-radar-wrap { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+    #standing-poll .poll-radar { width: 100%; max-width: 250px; height: auto; }
+    #standing-poll .poll-ring { fill: none; stroke: #e5e7eb; stroke-width: 1; }
+    #standing-poll .poll-ring--outer { stroke: #2563eb; stroke-opacity: .5; stroke-width: 1.3; }
+    #standing-poll .poll-spoke { stroke: #e5e7eb; stroke-width: 1; }
+    #standing-poll .poll-labels { pointer-events: none; }
+    #standing-poll .poll-radar text { fill: #6b7280; font-size: 13px; font-weight: 600; font-family: inherit; }
+    #standing-poll .poll-poly-you { fill: #2563eb; fill-opacity: .16; stroke: #2563eb; stroke-width: 2; }
+    #standing-poll .poll-handle { fill: #2563eb; }
+    #standing-poll .poll-poly-community { fill: #9ca3af; fill-opacity: .12; stroke: #9ca3af; stroke-width: 1.5; stroke-dasharray: 4 3; }
+    #standing-poll .poll-goal-note { font-size: .7rem; color: #9ca3af; text-align: center; margin: 0; max-width: 30ch; }
+    #standing-poll .poll-axes { display: flex; flex-direction: column; gap: 1.1rem; }
+    #standing-poll .poll-target { color: #059669; font-weight: 600; font-size: .72em; white-space: nowrap; }
+
+    #standing-poll .poll-range { -webkit-appearance: none; appearance: none; height: 20px; background: transparent; cursor: pointer; }
+    #standing-poll .poll-range::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: #e5e7eb; }
+    #standing-poll .poll-range::-moz-range-track { height: 4px; border-radius: 4px; background: #e5e7eb; }
+    #standing-poll .poll-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: #2563eb; border: 2px solid #fff; box-shadow: 0 0 0 1px #2563eb; }
+    #standing-poll .poll-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #2563eb; border: 2px solid #fff; box-shadow: 0 0 0 1px #2563eb; }
+    #standing-poll .poll-range:focus-visible { outline: none; }
+    #standing-poll .poll-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px #dbeafe, 0 0 0 4px #2563eb; }
+    #standing-poll .poll-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px #dbeafe, 0 0 0 4px #2563eb; }
+    /* centered trust axis: tint the healthy middle of the track */
+    #standing-poll .poll-axis--center .poll-range::-webkit-slider-runnable-track { background: linear-gradient(90deg, #e5e7eb 0 33%, #9ad0c0 45% 55%, #e5e7eb 67% 100%); }
+    #standing-poll .poll-axis--center .poll-range::-moz-range-track { background: linear-gradient(90deg, #e5e7eb 0 33%, #9ad0c0 45% 55%, #e5e7eb 67% 100%); }
+
+    @media (prefers-reduced-motion: no-preference) {
+      #standing-poll .poll-poly-you { transition: all .1s linear; }
+    }
+  </style>
 </BaseLayout>

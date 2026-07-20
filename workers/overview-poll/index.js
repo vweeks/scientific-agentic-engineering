@@ -1,11 +1,16 @@
 // sae-overview-poll — backend for the "Where people stand" sliders on the
 // overview page. Two routes: POST /response, GET /aggregate.
 //
-// Privacy design: the client sends four integers (0–100). The caller's IP is
-// used only to compute a rate-limit key — HMAC(secret, day + ip) — so the raw
-// IP is never stored and keys cannot be correlated across days. Rate limit is
-// intentionally a cap per day, not unique-forever: institutional NAT means one
-// IP can be a whole lab.
+// Privacy design: the client sends four integers (0–100) plus a phase. The
+// caller's IP is used only to compute a rate-limit key — HMAC(secret, day + ip)
+// — so the raw IP is never stored and keys cannot be correlated across days.
+// Rate limit is intentionally a cap per day, not unique-forever: institutional
+// NAT means one IP can be a whole lab.
+//
+// phase = 'before' (baseline sentiment, the overview page) or 'after'
+// (post-engagement, a later placement). Aggregated as two separate
+// populations; no per-person identifier is stored, so individuals are never
+// paired across the two phases.
 
 const ALLOWED_ORIGINS = [
   'https://vweeks.github.io',
@@ -17,7 +22,8 @@ const MAX_PER_DAY = 3;
 // Axis names live in four places — AXES here, the AVG list in aggregate(),
 // schema.sql, and pollAxes in src/pages/overview.astro. Keep them in sync:
 // an axis missing from the SQL surfaces as a silent null, not an error.
-const AXES = ['familiarity', 'adoption', 'skepticism', 'overwhelm'];
+const AXES = ['familiarity', 'adoption', 'keepingup', 'trust'];
+const PHASES = ['before', 'after'];
 
 // Per-isolate aggregate memo: the Cache API is unavailable on workers.dev,
 // so this is the layer that actually keeps /aggregate from hitting D1 on
@@ -55,16 +61,28 @@ async function ipDayHash(secret, ip) {
   return [...new Uint8Array(sig)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Returns { phases: { before: {count, averages}, after: {count, averages} } },
+// with every phase present so the client can rely on the shape. averages are
+// null per axis when that phase has no responses yet.
 async function aggregate(db) {
-  const row = await db.prepare(
-    `SELECT COUNT(*) AS n,
+  const { results } = await db.prepare(
+    `SELECT phase, COUNT(*) AS n,
             AVG(familiarity) AS familiarity, AVG(adoption) AS adoption,
-            AVG(skepticism) AS skepticism, AVG(overwhelm) AS overwhelm
-     FROM responses`,
-  ).first();
-  const averages = {};
-  for (const axis of AXES) averages[axis] = row.n ? Math.round(row[axis]) : null;
-  return { count: row.n, averages };
+            AVG(keepingup) AS keepingup, AVG(trust) AS trust
+     FROM responses GROUP BY phase`,
+  ).all();
+
+  const phases = {};
+  for (const phase of PHASES) {
+    phases[phase] = { count: 0, averages: Object.fromEntries(AXES.map(a => [a, null])) };
+  }
+  for (const row of results ?? []) {
+    if (!phases[row.phase]) continue; // ignore any unexpected phase value
+    const averages = {};
+    for (const axis of AXES) averages[axis] = row.n ? Math.round(row[axis]) : null;
+    phases[row.phase] = { count: row.n, averages };
+  }
+  return { phases };
 }
 
 export default {
@@ -115,6 +133,11 @@ export default {
       } catch {
         return json({ error: 'invalid JSON' }, 400, cors);
       }
+
+      const phase = body?.phase ?? 'before';
+      if (!PHASES.includes(phase)) {
+        return json({ error: `phase must be one of ${PHASES.join(', ')}` }, 400, cors);
+      }
       const values = {};
       for (const axis of AXES) {
         const v = body?.[axis];
@@ -134,9 +157,9 @@ export default {
       }
 
       await env.DB.prepare(
-        `INSERT INTO responses (familiarity, adoption, skepticism, overwhelm, ip_day_hash)
-         VALUES (?, ?, ?, ?, ?)`,
-      ).bind(values.familiarity, values.adoption, values.skepticism, values.overwhelm, hash).run();
+        `INSERT INTO responses (phase, familiarity, adoption, keepingup, trust, ip_day_hash)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+      ).bind(phase, values.familiarity, values.adoption, values.keepingup, values.trust, hash).run();
 
       // The response is stored at this point. The aggregate refresh is a
       // nicety, not a condition of success — if it fails, still report ok,
