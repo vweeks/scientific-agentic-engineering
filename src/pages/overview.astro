@@ -1,7 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import OverviewToc from '../components/OverviewToc.astro';
 
 const base = import.meta.env.BASE_URL;
+
+// "On this page" sections — order and slugs must match the H2 ids below and
+// drive both the sidebar TOC and the scroll-spy in OverviewToc.astro.
+const sections = [
+  { slug: 'why-different', text: 'Why scientific code is different' },
+  { slug: 'where-people-stand', text: 'Where people stand' },
+  { slug: 'where-ai-meets-code', text: 'Where AI meets your code' },
+  { slug: 'what-building', text: 'What this project is building' },
+  { slug: 'what-not', text: 'What this project is not' },
+  { slug: 'tool-agnostic', text: 'Why the framework is tool-agnostic' },
+  { slug: 'where-next', text: 'Where to go next' },
+];
 
 // Interaction types, ordered by how much of your codebase the tool can see
 // (access 1–3). This replaces the old five-"stages" ladder: the differentiator
@@ -148,8 +161,28 @@ const notScope = [
   title="Overview — Scientific Agentic Engineering"
   description="What Scientific Agentic Engineering is for: the failure modes AI agents introduce in scientific software, the ways people work with these tools, and what this fellowship is and is not building."
 >
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-3xl font-bold text-gray-900">Overview</h1>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:flex lg:gap-10">
+    <!-- Desktop sidebar: "On this page" section nav + scroll-spy -->
+    <aside class="hidden lg:block lg:w-52 lg:flex-none">
+      <div class="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto pb-6 pr-1">
+        <OverviewToc sections={sections} />
+      </div>
+    </aside>
+
+    <!-- Content column -->
+    <div class="min-w-0 lg:flex-1">
+      <div class="max-w-3xl mx-auto lg:mx-0">
+        <!-- Mobile disclosure: same TOC, collapsed by default -->
+        <details class="lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50/70">
+          <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-700 marker:text-gray-400">
+            On this page
+          </summary>
+          <div class="border-t border-gray-200 px-4 py-3">
+            <OverviewToc sections={sections} showLabel={false} />
+          </div>
+        </details>
+
+        <h1 class="text-3xl font-bold text-gray-900">Overview</h1>
 
     <p class="mt-4 text-lg text-gray-600 leading-relaxed">
       AI coding agents got good quickly, and research software teams are already
@@ -167,7 +200,7 @@ const notScope = [
       the classes of error those approaches are designed to mitigate.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
+    <h2 id="why-different" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       When code makes a wrong assumption — whether a person or an agent
@@ -192,7 +225,7 @@ const notScope = [
       reconstruct is a result that cannot be defended.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where people stand</h2>
+    <h2 id="where-people-stand" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">Where people stand</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       Research software has not settled on these tools, and reactions to them are
@@ -374,7 +407,7 @@ const notScope = [
       steadiness to keep up without drowning.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where AI meets your code</h2>
+    <h2 id="where-ai-meets-code" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">Where AI meets your code</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       People reach for AI on code in a handful of ways. What really separates them
@@ -429,7 +462,7 @@ const notScope = [
       ))}
     </div>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is building</h2>
+    <h2 id="what-building" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">What this project is building</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       The fellowship runs from April 2026 to April 2027. Four milestones mark what
@@ -500,7 +533,7 @@ const notScope = [
       }
     </script>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is not</h2>
+    <h2 id="what-not" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">What this project is not</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       This is a project about guidance and education, not a software product. To
@@ -516,7 +549,7 @@ const notScope = [
       ))}
     </ul>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Why the framework is tool-agnostic</h2>
+    <h2 id="tool-agnostic" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">Why the framework is tool-agnostic</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       The framework is tool-agnostic by design. Whichever tools you favor — and
@@ -533,7 +566,7 @@ const notScope = [
       from. Where specific tools appear, they appear as examples.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where to go next</h2>
+    <h2 id="where-next" class="mt-12 scroll-mt-8 text-xl font-semibold text-gray-900">Where to go next</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
       The <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> develops
@@ -548,6 +581,8 @@ const notScope = [
         especially in sensitive roles. Tools and policies are both evolving
         quickly, and this site is not a substitute for either.
       </p>
+    </div>
+      </div>
     </div>
   </div>
 
