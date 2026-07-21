@@ -3,35 +3,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const base = import.meta.env.BASE_URL;
 
-const modes = [
+// Interaction types, ordered by how much of your codebase the tool can see
+// (access 1–3). This replaces the old five-"stages" ladder: the differentiator
+// is integration/access, not "how advanced." Capability depth (tool use,
+// planning, autonomous agents) and the agency-vs-autonomy distinction live in
+// the framework and glossary, not here.
+const interactionTypes = [
   {
     name: 'Tab-complete',
     where: 'In your editor',
-    what: 'Your editor finishes the line you were already writing.',
+    access: 1,
+    what: 'Your editor suggests the next line or block from the code right around your cursor. Fast and local — it does not know the rest of your project.',
+    eg: 'the gray ghost-text your editor offers as you type.',
   },
   {
     name: 'Chat assistant',
     where: 'In a chat window',
-    what: 'You describe a problem in a chat window and copy/paste the answer into your code by hand.',
+    access: 2,
+    what: 'You describe the problem and paste in code or an error; you copy the answer back by hand. It sees exactly what you give it, and nothing else.',
+    eg: 'pasting a function and a stack trace into a chat, in the browser or an app.',
   },
   {
-    name: 'Tool use',
-    where: 'In a coding assistant',
-    what:
-      'The assistant calls tools instead of guessing — reading a file, querying a dataset, running a command. Plugins, MCP servers, and skills are all ways of handing it a tool.',
-  },
-  {
-    name: 'Planning mode',
-    where: 'In a coding assistant',
-    what: 'The assistant proposes what it intends to do, and waits for you before it does it.',
-  },
-  {
-    name: 'Autonomous agent teams',
-    where: 'In a coding assistant',
-    what:
-      'Long-running agents work broadly on their own and coordinate sub-agents, with few checkpoints before they act.',
+    name: 'Coding assistant',
+    where: 'In your project',
+    access: 3,
+    what: 'It works inside your project — opening files, running commands, using tools and skills. The fullest access, and the most it can do without you moving anything by hand.',
+    eg: 'an assistant you point at a repo and ask to make a change end to end.',
   },
 ];
+
+const surfaces = ['IDE extension', 'Web app', 'Terminal CLI', 'Desktop app'];
 
 const failureModes = [
   'Unit confusion',
@@ -40,45 +41,98 @@ const failureModes = [
   'Visualization misinterpretation',
 ];
 
-const traps = [
+const risks = [
   {
     name: 'Context bloat',
-    line: 'More context is not more signal.',
+    line: 'More context != more signal.',
     body:
-      'Long sessions drift as the window fills. Details you established early get buried, and nothing warns you when they do.',
+      'Long sessions drift as the window fills. Details you set early get buried, and nothing warns you when they do.',
   },
   {
     name: 'Over-trust',
-    line: 'Fluent is not correct.',
+    line: 'Fluent != correct.',
     body:
-      'Confident output that is quietly wrong is the failure you will meet most often, and nothing in the tone of an answer tells you whether you are looking at one.',
+      'Confident output that is quietly wrong is easy to miss — nothing in the tone of an answer tells you which you are looking at.',
+  },
+  {
+    name: 'Prompt injection',
+    line: 'Fetched != trusted.',
+    security: true,
+    body:
+      'An assistant that reads issues, web pages, or data files can be steered by instructions hidden in them. What it fetches is not automatically trustworthy.',
   },
 ];
 
-const deliverables = [
+// Four facets of where someone stands on AI-augmented development. Three run
+// "outward is the direction the project encourages"; trust is centered, where
+// the healthy target is the middle (calibrated), not an end. Keys are the
+// stable backend contract (see workers/overview-poll) — labels can change
+// without a Cloudflare edit; keys cannot.
+const pollAxes = [
+  { key: 'familiarity', label: 'Familiarity', left: 'Unaware', right: 'Fluent', goal: 'up' },
+  { key: 'adoption', label: 'Adoption', left: 'Not using', right: 'Daily use', goal: 'up' },
+  { key: 'keepingup', label: 'Keeping up', left: 'Overwhelmed', right: 'Steady', goal: 'up' },
+  { key: 'trust', label: 'Trust', left: 'Blanket rejection', right: 'Blind trust', mid: 'Calibrated', goal: 'center' },
+];
+const POLL_PHASE = 'before';
+const POLL_DEFAULT = 25;
+
+// Radar geometry, precomputed so the skeleton renders server-side (styles apply
+// cleanly, less client DOM-building). The client script recomputes the two data
+// polygons on interaction with the same math. "health" makes further-from-center
+// mean the encouraged direction on every axis, including centered trust.
+const R_CX = 130, R_CY = 130, R_R = 92;
+const radarPt = (i, hv) => {
+  const ang = (-90 + i * 90) * Math.PI / 180;
+  const r = (hv / 100) * R_R;
+  return [R_CX + r * Math.cos(ang), R_CY + r * Math.sin(ang)];
+};
+const radarHealth = (goal, v) => (goal === 'center' ? 100 - Math.abs(v - 50) * 2 : v);
+const fmtPts = (pts) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+const radarRings = [25, 50, 75, 100].map(f => fmtPts(pollAxes.map((_, i) => radarPt(i, f))));
+const radarSpokes = pollAxes.map((_, i) => radarPt(i, 100));
+const radarLabels = pollAxes.map((a, i) => {
+  const [x, y] = radarPt(i, 113);
+  return {
+    label: a.label, x, y,
+    anchor: i === 1 ? 'start' : i === 3 ? 'end' : 'middle',
+    baseline: i === 0 ? 'auto' : i === 2 ? 'hanging' : 'middle',
+  };
+});
+const radarInit = fmtPts(pollAxes.map((a, i) => radarPt(i, radarHealth(a.goal, POLL_DEFAULT))));
+const handleInit = pollAxes.map((a, i) => radarPt(i, radarHealth(a.goal, POLL_DEFAULT)));
+
+// Milestone timeline for "What this project is building". Date-anchored: each
+// milestone (Jul/Oct/Jan/Apr) holds the built deliverables that land then.
+// Reference Workflow and the Milestone 3 items follow the SoW wording;
+// dissemination activities (US-RSE report, blog, webinar) are intentionally
+// not listed here — this section is about built artifacts.
+const milestones = [
   {
-    name: 'The Framework',
-    when: 'July 2026',
-    body:
-      'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.',
+    date: 'Jul 2026',
+    items: [
+      { name: 'The Framework', body: 'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.' },
+    ],
   },
   {
-    name: 'The Community Repository',
-    when: 'October 2026',
-    body:
-      'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.',
+    date: 'Oct 2026',
+    items: [
+      { name: 'The Community Repository', body: 'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.' },
+      { name: 'The Reference Workflow', body: 'A structured exercise: build a simple weather-model error-statistics application with the AI tools of your choice, applying the framework’s principles to avoid documented failure modes — unit confusion, visualization misinterpretation, and precision loss.' },
+    ],
   },
   {
-    name: 'The Reference Workflow',
-    when: 'October 2026',
-    body:
-      'A structured exercise: build a small weather-model error-statistics application with the AI tooling of your choice, and practice catching documented failure modes while you do it.',
+    date: 'Jan 2027',
+    items: [
+      { name: 'Interactive tutorial series', body: '“Building Your First Scientific Agent” — guiding you through the framework and repository tools to build a validated agent for the Reference Workflow.' },
+      { name: 'Failure-mode examples', body: 'Static visual documentation of common failure modes — hallucinated physics, precision loss, unit confusion — drawn from real development experience, so the tutorials can focus on getting it right.' },
+    ],
   },
   {
-    name: 'Tutorials and workshops',
-    when: 'January and April 2027',
-    body:
-      '“Building Your First Scientific Agent,” followed by live sessions with real-time Q&A, recorded and published for anyone who could not attend.',
+    date: 'Apr 2027',
+    items: [
+      { name: 'Live workshop', body: 'A live workshop following the reference workflow, with real-time Q&A — recorded and published for anyone who cannot attend.' },
+    ],
   },
 ];
 
@@ -99,19 +153,32 @@ const notScope = [
 
     <p class="mt-4 text-lg text-gray-600 leading-relaxed">
       AI coding agents got good quickly, and research software teams are already
-      using them. The productivity is real. What has not kept pace is the practice
-      of checking their output — and scientific software fails in ways that
-      general-purpose tooling is not looking for.
+      using them. The productivity is real, and so is the risk: scientific
+      software can fail in ways that general-purpose tooling was never built to
+      catch.
+    </p>
+
+    <p class="mt-4 text-lg text-gray-600 leading-relaxed">
+      This fellowship teaches research software engineers to practice
+      AI-augmented engineering effectively and safely — not simply to check an
+      agent's output more carefully, but to work in ways that keep errors from
+      slipping through in the first place. That means covering the kinds of AI
+      tools available, the approaches that get the most out of them safely, and
+      the classes of error those approaches are designed to mitigate.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why scientific code is different</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      In most software, a wrong choice costs you aesthetic debt. In scientific
-      software, a wrong choice can cost you
-      <strong class="text-gray-900">corrupted results that still pass CI</strong>
-      — a green test suite sitting on top of a physically meaningless answer. The
-      failures that do this are domain failures, and a linter will not find them:
+      When code makes a wrong assumption — whether a person or an agent
+      introduced it — the problem in ordinary software is usually apparent: the
+      build breaks, a test fails, something looks off on screen. Scientific
+      software can fail more quietly, and more dangerously. The code runs, the
+      tests pass, and you are left with <strong class="text-gray-900">corrupted results that still pass CI</strong> —
+      a green test suite sitting on top of a physically meaningless answer. They
+      are also among the easiest to miss when reviewing AI-written code: an agent
+      does not make the mistakes you would make yourself, so they slip past the
+      instincts a reviewer leans on. A few of the classes worth watching for:
     </p>
 
     <ul class="mt-4 flex flex-wrap gap-2">
@@ -122,72 +189,241 @@ const notScope = [
 
     <p class="mt-4 text-gray-600 leading-relaxed">
       Reproducibility erodes the same way, and more quietly. A result nobody can
-      reconstruct — because nobody recorded which parts an agent wrote, or who
-      approved them — is a result that cannot be defended.
+      reconstruct is a result that cannot be defended.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Two reasonable reactions</h2>
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where people stand</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      Research software has not settled on these tools. Some teams adopted them
-      quickly, and are finding that review practices built to catch human mistakes
-      do not catch machine ones. Others have stayed away, on the reasonable
-      grounds that a plausible wrong answer is worse than no answer at all.
+      Research software has not settled on these tools, and reactions to them are
+      not binary. People differ, among other things, in how familiar they are
+      with the tools, how far they have adopted them, how well their trust is
+      calibrated, and how steady they feel amid the pace of change.
     </p>
+
+    <div id="standing-poll" class="mt-6 rounded-lg border border-gray-200 p-5" data-phase={POLL_PHASE} hidden>
+      <div class="flex items-baseline justify-between gap-3 flex-wrap">
+        <h3 class="font-semibold text-gray-900">Place yourself</h3>
+        <span id="poll-count" class="text-xs uppercase tracking-wide text-gray-400"></span>
+      </div>
+      <p class="mt-1 text-sm text-gray-600 leading-relaxed">
+        Anonymously rate your own sentiment toward AI-augmented development
+        tools. Whatever your starting point, this project hopes to widen your
+        coverage on every axis.
+      </p>
+
+      <div class="poll-rig mt-5">
+        <div class="poll-radar-wrap">
+          <svg class="poll-radar" viewBox="-40 -40 340 340" role="img" aria-label="A four-axis shape of your response. Further from the center is the direction this project encourages: more familiarity, more adoption, steadier footing, and calibrated trust.">
+            <g>
+              {radarRings.map((pts, idx) => (
+                <polygon points={pts} class={idx === radarRings.length - 1 ? 'poll-ring poll-ring--outer' : 'poll-ring'} />
+              ))}
+              {radarSpokes.map(([x, y]) => (
+                <line x1={R_CX} y1={R_CY} x2={x.toFixed(1)} y2={y.toFixed(1)} class="poll-spoke" />
+              ))}
+            </g>
+            <polygon class="poll-poly-community" points="" hidden></polygon>
+            <polygon class="poll-poly-you" points={radarInit}></polygon>
+            <g class="poll-handles">
+              {handleInit.map(([x, y]) => (
+                <circle cx={x.toFixed(1)} cy={y.toFixed(1)} r="3.5" class="poll-handle" />
+              ))}
+            </g>
+            <g>
+              {radarLabels.map(({ label, x, y, anchor, baseline }) => (
+                <text x={x.toFixed(1)} y={y.toFixed(1)} text-anchor={anchor} dominant-baseline={baseline}>{label}</text>
+              ))}
+            </g>
+          </svg>
+          <p class="poll-goal-note">Further out = the direction this project encourages.</p>
+        </div>
+
+        <div class="poll-axes">
+          {pollAxes.map(({ key, label, left, right, mid, goal }) => (
+            <div class={goal === 'center' ? 'poll-axis poll-axis--center' : 'poll-axis'}>
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="text-xs text-gray-400">{left}</span>
+                <span class="text-sm font-medium text-gray-700">{label}{mid && <span class="poll-target"> ▸ {mid}</span>}</span>
+                <span class="text-xs text-gray-400 text-right">{right}</span>
+              </div>
+              <input type="range" min="0" max="100" value={POLL_DEFAULT} data-axis={key} data-goal={goal}
+                     aria-label={mid ? `${label}: ${left} to ${right}, healthy at the center (${mid})` : `${label}: ${left} to ${right}`}
+                     class="poll-range mt-2 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="mt-5 flex items-center gap-4 flex-wrap">
+        <button id="poll-submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600">
+          Add your response
+        </button>
+        <p id="poll-status" class="text-sm text-gray-500" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <script define:vars={{
+      axes: pollAxes.map(a => ({ key: a.key, goal: a.goal })),
+      phase: POLL_PHASE,
+      CX: R_CX, CY: R_CY, RAD: R_R,
+      endpoint: 'https://sae-overview-poll.vweeks-c17.workers.dev',
+    }}>
+      const root = document.getElementById('standing-poll');
+      const btn = document.getElementById('poll-submit');
+      const statusEl = document.getElementById('poll-status');
+      const countEl = document.getElementById('poll-count');
+
+      if (root && btn) {
+        const polyYou = root.querySelector('.poll-poly-you');
+        const polyCommunity = root.querySelector('.poll-poly-community');
+        const handles = root.querySelectorAll('.poll-handle');
+        const ranges = root.querySelectorAll('input[type="range"]');
+        const DONE_KEY = `sae-overview-poll-done-${phase}`;
+
+        const health = (goal, v) => (goal === 'center' ? 100 - Math.abs(v - 50) * 2 : v);
+        const pt = (i, hv) => {
+          const a = (-90 + i * 90) * Math.PI / 180, r = (hv / 100) * RAD;
+          return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+        };
+        const pointsFrom = (valueOf) =>
+          axes.map((ax, i) => pt(i, health(ax.goal, valueOf(ax.key))).map(n => n.toFixed(1)).join(',')).join(' ');
+
+        const state = {};
+        axes.forEach((ax, i) => { state[ax.key] = Number(ranges[i].value); });
+
+        function renderYou() {
+          polyYou.setAttribute('points', pointsFrom(k => state[k]));
+          axes.forEach((ax, i) => {
+            const [x, y] = pt(i, health(ax.goal, state[ax.key]));
+            handles[i].setAttribute('cx', x.toFixed(1));
+            handles[i].setAttribute('cy', y.toFixed(1));
+          });
+        }
+        ranges.forEach(inp => inp.addEventListener('input', () => {
+          state[inp.dataset.axis] = Number(inp.value);
+          renderYou();
+        }));
+        renderYou();
+
+        function showCommunity(averages) {
+          if (!averages || !axes.every(ax => averages[ax.key] != null)) return;
+          polyCommunity.setAttribute('points', pointsFrom(k => averages[k]));
+          polyCommunity.hidden = false;
+        }
+        function setCount(n) {
+          if (countEl && n > 0) countEl.textContent = `${n} response${n === 1 ? '' : 's'} so far`;
+        }
+        function markDone(message) {
+          ranges.forEach(i => (i.disabled = true));
+          btn.disabled = true;
+          if (statusEl) statusEl.textContent = message;
+        }
+        const alreadyDone = () => {
+          try { return localStorage.getItem(DONE_KEY) === '1'; } catch { return false; }
+        };
+
+        async function init() {
+          let data;
+          try {
+            const res = await fetch(`${endpoint}/aggregate`);
+            if (!res.ok) return; // backend down or retired: leave the widget hidden
+            data = await res.json();
+          } catch { return; }
+          const mine = data?.phases?.[phase] || { count: 0, averages: null };
+          root.hidden = false;
+          setCount(mine.count);
+          if (alreadyDone()) { showCommunity(mine.averages); markDone('You have already added yours.'); }
+        }
+
+        async function submit() {
+          btn.disabled = true;
+          const body = { phase };
+          ranges.forEach(i => { if (i.dataset.axis) body[i.dataset.axis] = Number(i.value); });
+          try {
+            const res = await fetch(`${endpoint}/response`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            });
+            if (res.status === 429) {
+              markDone('Daily limit reached from your network — try again tomorrow.');
+              return;
+            }
+            if (!res.ok) throw new Error(String(res.status));
+            const data = await res.json();
+            try { localStorage.setItem(DONE_KEY, '1'); } catch { /* private mode */ }
+            const mine = data?.phases?.[phase];
+            if (mine) { setCount(mine.count); showCommunity(mine.averages); }
+            markDone('Thanks — added.');
+          } catch {
+            btn.disabled = false;
+            if (statusEl) statusEl.textContent = 'Could not reach the poll service — your response may not have been recorded.';
+          }
+        }
+
+        btn.addEventListener('click', submit);
+        init();
+      }
+    </script>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project is aimed at both. The caution is well founded and the
-      productivity is real, and the work is figuring out what has to be in place
-      before you can have both at once.
+      This project is aimed at that whole spread, not one point in it. Wherever
+      you land, the aim is the same push: more familiarity and adoption where
+      they help, trust that is calibrated rather than blind or absent, and enough
+      steadiness to keep up without drowning.
     </p>
 
-    <h2 class="mt-12 text-xl font-semibold text-gray-900">Five ways people work with AI on code</h2>
+    <h2 class="mt-12 text-xl font-semibold text-gray-900">Where AI meets your code</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      These arrived roughly in the order below, which is why they are often
-      described as stages. They are not stages, and further down the list is not
-      better. Each one arrived without retiring the one before it, and most people
-      move between them by task — laying groundwork with an agent and then going
-      back over the details by hand is an ordinary afternoon, not a regression.
+      People reach for AI on code in a handful of ways. What really separates them
+      is not how “advanced” they are — it is <strong class="text-gray-900">how much
+      of your codebase the tool can see</strong>, and where you run it.
     </p>
 
-    <p class="mt-3 text-gray-600 leading-relaxed">
-      It also matters that
-      <strong class="text-gray-900">agency is a matter of degree, not a category</strong>.
-      A coding assistant such as Claude Code or Codex can be driven at any of the
-      last three levels. What separates them is how you use the tool, not which
-      tool you installed.
-    </p>
-
-    <div class="mt-6 space-y-5">
-      {modes.map(({ name, where, what }, i) => (
-        <div class="border-l-4 border-blue-100 pl-5 py-1">
-          <div class="flex items-baseline gap-3 flex-wrap">
-            <h3 class="font-semibold text-gray-900">
-              <span class="text-blue-600 tabular-nums">{i + 1}.</span> {name}
-            </h3>
-            <span class="text-xs uppercase tracking-wide text-gray-400">{where}</span>
+    <div class="mt-6 space-y-4">
+      {interactionTypes.map(({ name, where, access, what, eg }) => (
+        <div class="rounded-lg border border-gray-200 p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-baseline gap-3 flex-wrap">
+              <h3 class="font-semibold text-gray-900">{name}</h3>
+              <span class="text-xs uppercase tracking-wide text-gray-400">{where}</span>
+            </div>
+            <div class="shrink-0 text-right">
+              <span class="block text-[0.6rem] uppercase tracking-wide text-gray-400 mb-1">Codebase access</span>
+              <span class="inline-flex gap-1 justify-end">
+                {[1, 2, 3].map(i => (
+                  <span class:list={['inline-block h-1.5 w-4 rounded-sm', i <= access ? 'bg-blue-600' : 'bg-gray-200']} aria-hidden="true"></span>
+                ))}
+              </span>
+            </div>
           </div>
-          <p class="mt-1 text-gray-600 leading-relaxed">{what}</p>
+          <p class="mt-2 text-gray-600 leading-relaxed">{what}</p>
+          <p class="mt-2 text-sm text-gray-400"><span class="font-medium text-gray-500">Looks like:</span> {eg}</p>
         </div>
       ))}
     </div>
 
-    <p class="mt-6 text-gray-600 leading-relaxed">
-      What changes down the list is how much of the work proceeds without an
-      active decision from you. Watching a session scroll past is not the same as
-      deciding anything, and once sub-agents are running in parallel, keeping up
-      with all of them becomes considerably more taxing. Where to spend your
-      attention, and what to check when you cannot spend it, is what the <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> is for.
+    <h3 class="mt-10 font-semibold text-gray-900">And it turns up in different places</h3>
+
+    <p class="mt-3 text-gray-600 leading-relaxed">
+      The same coding assistant can run on several surfaces, to fit how you already work.
     </p>
 
-    <h3 class="mt-10 font-semibold text-gray-900">Two risks that do not depend on which one you pick</h3>
+    <ul class="mt-4 flex flex-wrap gap-2">
+      {surfaces.map(s => (
+        <li class="rounded-full bg-gray-50 border border-gray-200 px-3 py-1 text-sm text-gray-600">{s}</li>
+      ))}
+    </ul>
 
-    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
-      {traps.map(({ name, line, body }) => (
+    <h3 class="mt-10 font-semibold text-gray-900">A few general risks</h3>
+
+    <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-5">
+      {risks.map(({ name, line, body, security }) => (
         <div class="rounded-lg border border-gray-200 p-5">
           <h4 class="font-semibold text-gray-900">{name}</h4>
-          <p class="mt-1 text-sm font-medium text-blue-600">{line}</p>
+          <p class:list={['mt-1 text-sm font-medium', security ? 'text-amber-700' : 'text-blue-600']}>{line}</p>
           <p class="mt-2 text-sm text-gray-600 leading-relaxed">{body}</p>
         </div>
       ))}
@@ -196,33 +432,79 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is building</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      The fellowship runs from April 2026 to April 2027 and produces four things.
+      The fellowship runs from April 2026 to April 2027. Four milestones mark what
+      it builds — select one to see what lands.
     </p>
 
-    <dl class="mt-5 space-y-5">
-      {deliverables.map(({ name, when, body }) => (
-        <div>
-          <dt class="flex items-baseline gap-3 flex-wrap">
-            <span class="font-semibold text-gray-900">{name}</span>
-            <span class="text-xs uppercase tracking-wide text-gray-400">{when}</span>
-          </dt>
-          <dd class="mt-1 text-gray-600 leading-relaxed">{body}</dd>
-        </div>
-      ))}
-    </dl>
+    <div id="build-timeline" class="mt-6">
+      <div class="tl" role="tablist" aria-label="Project milestones">
+        <div class="tl-line" aria-hidden="true"></div>
+        {milestones.map((m, i) => (
+          <button type="button" class="tl-node" role="tab" id={`tl-tab-${i}`} aria-controls={`tl-panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+            <span class="tl-dot" aria-hidden="true"></span>
+            <span class="tl-date">{m.date}</span>
+          </button>
+        ))}
+      </div>
+      <div class="tl-panels">
+        {milestones.map((m, i) => (
+          <div class="tl-panel" id={`tl-panel-${i}`} role="tabpanel" aria-labelledby={`tl-tab-${i}`}>
+            <span class="tl-when">{m.date}</span>
+            {m.items.map(it => (
+              <div class="tl-item">
+                <h3 class="tl-item-name">{it.name}</h3>
+                <p class="tl-item-body">{it.body}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
 
     <p class="mt-6 text-gray-600 leading-relaxed">
       The aim throughout is to turn broad AI capability into reliable development
-      instruments: tools a scientist can point at real work and trust the output
-      of, for reasons they can articulate.
+      instruments: tools you can point at real work and trust the output of, for
+      reasons you can articulate.
     </p>
+
+    <script>
+      // Milestone timeline — ARIA tablist with roving tabindex. Progressive
+      // enhancement: panels render server-side (all visible without JS); this
+      // collapses them to one and wires click / hover / arrow-key selection.
+      const tlRoot = document.getElementById('build-timeline');
+      if (tlRoot) {
+        const tlNodes = [...tlRoot.querySelectorAll<HTMLButtonElement>('.tl-node')];
+        const tlPanels = [...tlRoot.querySelectorAll<HTMLElement>('.tl-panel')];
+        const tlSelect = (i: number, focus: boolean) => {
+          tlNodes.forEach((n, j) => {
+            const on = j === i;
+            n.setAttribute('aria-selected', on ? 'true' : 'false');
+            n.tabIndex = on ? 0 : -1;
+            tlPanels[j].hidden = !on;
+          });
+          if (focus) tlNodes[i].focus();
+        };
+        tlNodes.forEach((n, i) => {
+          n.addEventListener('click', () => tlSelect(i, false));
+          n.addEventListener('mouseenter', () => tlSelect(i, false));
+          n.addEventListener('keydown', (e: KeyboardEvent) => {
+            let t: number | null = null;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') t = (i + 1) % tlNodes.length;
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') t = (i - 1 + tlNodes.length) % tlNodes.length;
+            else if (e.key === 'Home') t = 0;
+            else if (e.key === 'End') t = tlNodes.length - 1;
+            if (t !== null) { e.preventDefault(); tlSelect(t, true); }
+          });
+        });
+        tlSelect(0, false);
+      }
+    </script>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is not</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This is a project about guidance and education, not a software product. It
-      is worth being specific about that, because the alternative is letting
-      people find out the hard way:
+      This is a project about guidance and education, not a software product. To
+      be specific about where the boundaries are:
     </p>
 
     <ul class="mt-4 space-y-3">
@@ -237,17 +519,18 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Why the framework is tool-agnostic</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      This project’s subject matter changes underneath it. MCP specifications take
-      breaking changes. Agent frameworks get rewritten. Tools named in a document
-      written today may be deprecated or superseded before the fellowship ends.
+      The framework is tool-agnostic by design. Whichever tools you favor — and
+      however fast the landscape shifts around them — it aims at practices that
+      hold in general rather than at any single product. That keeps it useful as
+      tools come and go, and useful across the community rather than only to
+      whoever happens to share a specific stack.
     </p>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      So the framework commits to principles rather than products. Validation
-      loops, human oversight, and domain-specific safeguards are claims about what
-      has to be true of a workflow, not about which vendor you buy from, and they
-      should still hold once the current generation of tools is gone. Where
-      specific tools appear, they appear as examples.
+      That is why the framework commits to principles rather than products.
+      Validation loops, human oversight, and domain-specific safeguards are claims
+      about what has to be true of a workflow, not about which vendor you buy
+      from. Where specific tools appear, they appear as examples.
     </p>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">Where to go next</h2>
@@ -255,16 +538,76 @@ const notScope = [
     <p class="mt-3 text-gray-600 leading-relaxed">
       The <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> develops
       the principles in depth and says where the checks go. The <a href={`${base}glossary/`} class="text-blue-600 hover:underline">glossary</a> defines
-      the vocabulary used across the project, including every term on this page.
+      the vocabulary used across the project, including the key terms on this page.
     </p>
 
     <div class="mt-8 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
       <p class="text-sm text-gray-600 leading-relaxed">
-        <strong class="text-gray-900">A note on institutional policy.</strong>
+        <strong class="text-gray-900">A note on institutional policy.</strong>{' '}
         Always follow your institution’s current guidance on AI-tool use —
         especially in sensitive roles. Tools and policies are both evolving
         quickly, and this site is not a substitute for either.
       </p>
     </div>
   </div>
+
+  <style is:global>
+    /* "Where people stand" poll — namespaced under #standing-poll so nothing
+       leaks to the rest of the page. Palette matches the site's gray/blue. */
+    #standing-poll .poll-rig { display: grid; gap: 1.3rem; align-items: center; }
+    @media (min-width: 640px) {
+      #standing-poll .poll-rig { grid-template-columns: 250px 1fr; gap: 1.5rem; }
+    }
+    #standing-poll .poll-radar-wrap { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+    #standing-poll .poll-radar { width: 100%; max-width: 250px; height: auto; }
+    #standing-poll .poll-ring { fill: none; stroke: #e5e7eb; stroke-width: 1; }
+    #standing-poll .poll-ring--outer { stroke: #2563eb; stroke-opacity: .5; stroke-width: 1.3; }
+    #standing-poll .poll-spoke { stroke: #e5e7eb; stroke-width: 1; }
+    #standing-poll .poll-labels { pointer-events: none; }
+    #standing-poll .poll-radar text { fill: #6b7280; font-size: 13px; font-weight: 600; font-family: inherit; }
+    #standing-poll .poll-poly-you { fill: #2563eb; fill-opacity: .16; stroke: #2563eb; stroke-width: 2; }
+    #standing-poll .poll-handle { fill: #2563eb; }
+    #standing-poll .poll-poly-community { fill: #9ca3af; fill-opacity: .12; stroke: #9ca3af; stroke-width: 1.5; stroke-dasharray: 4 3; }
+    #standing-poll .poll-goal-note { font-size: .7rem; color: #9ca3af; text-align: center; margin: 0; max-width: 30ch; }
+    #standing-poll .poll-axes { display: flex; flex-direction: column; gap: 1.1rem; }
+    #standing-poll .poll-target { color: #059669; font-weight: 600; font-size: .72em; white-space: nowrap; }
+
+    #standing-poll .poll-range { -webkit-appearance: none; appearance: none; height: 20px; background: transparent; cursor: pointer; }
+    #standing-poll .poll-range::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: #e5e7eb; }
+    #standing-poll .poll-range::-moz-range-track { height: 4px; border-radius: 4px; background: #e5e7eb; }
+    #standing-poll .poll-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin-top: -7px; border-radius: 50%; background: #2563eb; border: 2px solid #fff; box-shadow: 0 0 0 1px #2563eb; }
+    #standing-poll .poll-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #2563eb; border: 2px solid #fff; box-shadow: 0 0 0 1px #2563eb; }
+    #standing-poll .poll-range:focus-visible { outline: none; }
+    #standing-poll .poll-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px #dbeafe, 0 0 0 4px #2563eb; }
+    #standing-poll .poll-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px #dbeafe, 0 0 0 4px #2563eb; }
+    /* centered trust axis: tint the healthy middle of the track */
+    #standing-poll .poll-axis--center .poll-range::-webkit-slider-runnable-track { background: linear-gradient(90deg, #e5e7eb 0 33%, #9ad0c0 45% 55%, #e5e7eb 67% 100%); }
+    #standing-poll .poll-axis--center .poll-range::-moz-range-track { background: linear-gradient(90deg, #e5e7eb 0 33%, #9ad0c0 45% 55%, #e5e7eb 67% 100%); }
+
+    @media (prefers-reduced-motion: no-preference) {
+      #standing-poll .poll-poly-you { transition: all .1s linear; }
+    }
+
+    /* "What this project is building" — milestone timeline */
+    #build-timeline .tl { position: relative; display: flex; }
+    #build-timeline .tl-line { position: absolute; top: 9px; left: 12.5%; right: 12.5%; height: 2px; background: #d1d5db; }
+    #build-timeline .tl-node { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: .55rem; background: none; border: 0; padding: .1rem .25rem .25rem; cursor: pointer; font: inherit; }
+    #build-timeline .tl-dot { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid #d1d5db; transition: all .15s ease; }
+    #build-timeline .tl-date { font-size: .78rem; font-weight: 600; color: #9ca3af; transition: color .15s ease; }
+    #build-timeline .tl-node:hover .tl-dot { border-color: #2563eb; }
+    #build-timeline .tl-node[aria-selected="true"] .tl-dot { background: #2563eb; border-color: #2563eb; box-shadow: 0 0 0 4px #dbeafe; width: 18px; height: 18px; margin-top: -1px; }
+    #build-timeline .tl-node[aria-selected="true"] .tl-date { color: #111827; }
+    #build-timeline .tl-node:focus-visible { outline: none; }
+    #build-timeline .tl-node:focus-visible .tl-dot { box-shadow: 0 0 0 3px #dbeafe, 0 0 0 5px #2563eb; }
+    #build-timeline .tl-panel { margin-top: 1.4rem; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem 1.35rem; min-height: 8rem; }
+    #build-timeline .tl-when { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: #2563eb; font-weight: 700; }
+    #build-timeline .tl-item { margin-top: .85rem; }
+    #build-timeline .tl-item:first-of-type { margin-top: .55rem; }
+    #build-timeline .tl-item-name { font-size: 1rem; font-weight: 600; color: #111827; margin: 0; }
+    #build-timeline .tl-item-body { margin: .3rem 0 0; color: #4b5563; }
+    #build-timeline .tl-item + .tl-item { padding-top: .85rem; border-top: 1px solid #e5e7eb; }
+    @media (prefers-reduced-motion: reduce) {
+      #build-timeline .tl-dot, #build-timeline .tl-date { transition: none; }
+    }
+  </style>
 </BaseLayout>
