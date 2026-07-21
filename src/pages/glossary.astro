@@ -1,0 +1,180 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const groups = [
+  {
+    heading: 'The methodology',
+    terms: [
+      {
+        term: 'Scientific Agentic Engineering (SAE)',
+        def:
+          'Applying agentic engineering to scientific software: turning broad AI capability into reliable scientific instruments. Tool-agnostic by design — principles over products, because products change faster than practices.',
+      },
+      {
+        term: 'Agentic engineering',
+        def:
+          'Directing AI agents that plan, act, and use tools, rather than writing every line yourself. The term is Andrej Karpathy’s (2026), offered as the successor to “vibe coding” (2025).',
+      },
+      {
+        term: 'Validation loop',
+        def:
+          'The first principle: domain checks at each decision point — units, conservation, precision, provenance — so that errors are caught where they are made rather than where they surface.',
+      },
+      {
+        term: 'Human-in-the-loop oversight',
+        def:
+          'The second principle: concentrate human review on the decisions that matter, and accept lighter review elsewhere. Which decisions those are is project-specific — the language a prototype is written in may be incidental, while in a code base expected to match its neighbors it is not. Recurring cases include decisions that later work will inherit without re-examining, and decisions that steer the agent itself, since a wrong assumption early pollutes everything that follows it. The framework treats this at length. The point here is that review is a finite resource, and spreading it evenly spends it on decisions that did not need it.',
+      },
+      {
+        term: 'Domain-specific safeguard',
+        def:
+          'The third principle: checks that only make sense in a scientific context — physics checks, precision tests, scope-drift containment, tech-stack provenance.',
+      },
+    ],
+  },
+  {
+    heading: 'The building blocks',
+    terms: [
+      {
+        term: 'Agent',
+        def:
+          'An AI system that pursues a goal by planning and taking actions — reading files, running commands, calling tools — rather than only emitting text for a human to act on.',
+      },
+      {
+        term: 'Sub-agent',
+        def:
+          'A scoped agent launched by a session to carry out a bounded task, typically with restricted tools and a fresh context. Isolation is the point, for the same reason code review is: the reviewer is not the author. You already proofread your own work before opening the pull request, so reading it again yourself turns up nothing. An agent carrying the context of its own design decisions is in the same position — it will tend to confirm them, and if you ask it for tests, it will write tests that pass against the code as written rather than against the behavior you actually wanted.',
+      },
+      {
+        term: 'Skill',
+        def:
+          'A packaged, reusable capability an agent can invoke — for example a unit checker or a conservation-law validator. Skills are how domain knowledge becomes something the agent can actually run.',
+      },
+      {
+        term: 'MCP server (Model Context Protocol)',
+        def:
+          'A standard interface that exposes tools and data to an agent — reading a dataset, querying a catalog, calling an instrument API. Structured access to the real thing, in place of recollection of it.',
+      },
+      {
+        term: 'Tool use',
+        def:
+          'An agent calling an external function instead of guessing the answer. A model that can look something up should not be left to remember it.',
+      },
+      {
+        term: 'Context',
+        def:
+          'The working memory of a session: everything the model can currently see. It is finite, and what falls out of it is not flagged as missing.',
+      },
+    ],
+  },
+  {
+    heading: 'Ways of working',
+    terms: [
+      {
+        term: 'Planning mode',
+        def:
+          'The agent proposes what it intends to do and waits for approval before acting — the cheapest checkpoint available, since a wrong plan costs a sentence to correct.',
+      },
+      {
+        term: 'Guard-railed session',
+        def:
+          'A session the human drives, launching scoped sub-agents, kept sandboxed and local, with human approval on the decisions that matter.',
+      },
+      {
+        term: 'Autonomous hand-off',
+        def:
+          'A long-running agent acting broadly on its own with few checkpoints before it acts. The most convenient mode of work and the highest-risk one.',
+      },
+      {
+        term: 'Provenance',
+        def:
+          'The record of where code, data, and decisions came from — including which parts an agent produced, and who approved them. Reproducibility of an AI-assisted result depends on it.',
+      },
+    ],
+  },
+  {
+    heading: 'Failure modes',
+    intro:
+      'Each of these can produce corrupted results that still pass CI: the program runs, the tests go green, and the number it prints is wrong.',
+    terms: [
+      {
+        term: 'Unit confusion',
+        def:
+          'Quantities combined or converted in the wrong units — the arithmetic is valid, the physics is not.',
+      },
+      {
+        term: 'Precision loss',
+        def:
+          'Numerically careless operations — catastrophic cancellation, recomputation from rounded intermediates — that quietly degrade a result while every test still passes.',
+      },
+      {
+        term: 'Subtle physics violations',
+        def:
+          'Code that runs and returns plausible numbers while breaking a conservation law, a boundary condition, or a physical bound.',
+      },
+      {
+        term: 'Visualization misinterpretation',
+        def:
+          'A plot that is technically produced from the data and still tells the reader something false — mislabeled units, a misleading colormap, a truncated axis.',
+      },
+      {
+        term: 'Context bloat',
+        def:
+          'More context is not more signal. Long sessions drift as the window fills; key details get buried and quality slips without an error message.',
+      },
+      {
+        term: 'Over-trust',
+        def:
+          'Fluent is not correct. Quietly wrong output reads exactly like correct output, so an answer’s confidence is not evidence of its accuracy. The check has to come from somewhere other than the context that produced the answer — a test, a validator, a sub-agent reviewing with fresh context, or a human.',
+      },
+      {
+        term: 'Scope drift',
+        def:
+          'An agent’s work creeping beyond the task it was given. Contained by scoping tightly and resetting deliberately.',
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Glossary — Scientific Agentic Engineering"
+  description="Shared vocabulary for Scientific Agentic Engineering: agents, skills, MCP servers, validation loops, oversight, and the failure modes that matter in scientific code."
+>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900">Glossary</h1>
+
+    <p class="mt-4 text-gray-600 leading-relaxed">
+      These are the terms used across this project, defined as they are used here
+      rather than as any one vendor defines them.
+    </p>
+
+    <p class="mt-3 text-sm text-gray-500 leading-relaxed">
+      Published with Milestone 1 (July 2026) and revised alongside the framework
+      draft as the fellowship proceeds.
+    </p>
+
+    <div class="mt-10 space-y-12">
+      {groups.map(({ heading, intro, terms }) => (
+        <section>
+          <h2 class="text-xl font-semibold text-gray-900 pb-2 border-b border-gray-200">{heading}</h2>
+          {intro && <p class="mt-3 text-gray-600 leading-relaxed">{intro}</p>}
+          <dl class="mt-5 space-y-5">
+            {terms.map(({ term, def }) => (
+              <div>
+                <dt class="font-semibold text-gray-900">{term}</dt>
+                <dd class="mt-1 text-gray-600 leading-relaxed">{def}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))}
+    </div>
+
+    <p class="mt-12 text-gray-600 leading-relaxed">
+      New to this? Start with the <a href={`${base}overview/`} class="text-blue-600 hover:underline">Overview</a>.
+    </p>
+  </div>
+</BaseLayout>

@@ -10,26 +10,39 @@ const base = import.meta.env.BASE_URL;
   <Hero />
 
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 auto-rows-fr">
+      <FeatureCard
+        title="Overview"
+        description="The problem this project addresses, the ways people work with AI on code, and what the fellowship will and will not produce."
+        href={`${base}overview/`}
+      />
       <FeatureCard
         title="Framework"
         description="Principles and patterns for responsible AI-agent integration in scientific software development."
         href={`${base}framework/`}
       />
       <FeatureCard
-        title="Tutorials"
-        description="Hands-on guides with interactive examples for applying the framework in practice."
-        available={false}
+        title="Glossary"
+        description="Shared vocabulary for the field — agents, skills, MCP servers, validation loops, and the failure modes that matter in scientific code."
+        href={`${base}glossary/`}
       />
       <FeatureCard
         title="Community Catalog"
-        description="Curated collection of tools, patterns, and case studies from the scientific software community."
+        description="Scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples."
         available={false}
+        eta="October 2026"
+      />
+      <FeatureCard
+        title="Tutorials"
+        description="A hands-on series on using AI agents in scientific work, following the reference workflow."
+        available={false}
+        eta="January 2027"
       />
       <FeatureCard
         title="Workshops"
         description="Recordings and materials from community events, webinars, and training sessions."
         available={false}
+        eta="April 2027"
       />
     </div>
   </section>

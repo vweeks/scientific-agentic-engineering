@@ -1,0 +1,468 @@
+---
+// Review overlay, activated only by adding ?polish to any URL.
+//
+// Click any element to leave a comment and/or rewrite its text. Annotations
+// accumulate across pages in localStorage, then export as JSON or copy as a
+// ready-to-paste instruction block for a coding agent.
+//
+// Inert on normal visits: the script returns immediately unless the query
+// parameter is present, and renders nothing into the page until it does.
+---
+
+<script>
+  const PARAM = 'polish';
+  const STORE = 'sae-polish-v1';
+
+  if (new URLSearchParams(location.search).has(PARAM)) {
+    // ---------- annotation store ----------
+
+    /** @typedef {{id:string,page:string,sourceHint:string,selector:string,tag:string,context:string,originalText:string,newText:string|null,comment:string|null,createdAt:string}} Item */
+
+    /** @returns {Item[]} */
+    const load = () => {
+      try {
+        return JSON.parse(localStorage.getItem(STORE) || '[]');
+      } catch {
+        return [];
+      }
+    };
+    /** @param {Item[]} items */
+    const save = items => localStorage.setItem(STORE, JSON.stringify(items));
+
+    let items = load();
+
+    // ---------- locating an element in the source ----------
+
+    // A CSS path that survives a page rebuild: ids when available, else
+    // tag + nth-of-type from the body down.
+    const selectorFor = el => {
+      const parts = [];
+      for (let node = el; node && node !== document.body; node = node.parentElement) {
+        if (node.id) {
+          parts.unshift(`#${node.id}`);
+          break;
+        }
+        const tag = node.tagName.toLowerCase();
+        const siblings = [...node.parentElement.children].filter(c => c.tagName === node.tagName);
+        parts.unshift(siblings.length > 1 ? `${tag}:nth-of-type(${siblings.indexOf(node) + 1})` : tag);
+      }
+      return parts.join(' > ');
+    };
+
+    // Which source file most likely renders this page. Saves the agent a
+    // search, and is only ever a hint.
+    const sourceHintFor = pathname => {
+      const base = document.querySelector('link[rel=icon]')?.getAttribute('href')?.replace('favicon.svg', '') || '/';
+      const route = pathname.replace(base, '').replace(/\/$/, '');
+      if (!route) return 'src/pages/index.astro';
+      const framework = route.match(/^framework\/(.+)$/);
+      if (framework) return `src/content/framework/${framework[1]}.md`;
+      return `src/pages/${route}.astro`;
+    };
+
+    // Nearest heading at or above the element — orients a human reading the
+    // export. DOCUMENT_POSITION_FOLLOWING is set when el comes after h, so we
+    // keep the last heading that precedes it (or the element itself, if it is
+    // the heading) and stop at the first one that comes after.
+    const contextFor = el => {
+      const headings = [...document.querySelectorAll('main h1, main h2, main h3')];
+      let found = '';
+      for (const h of headings) {
+        const isSelfOrAbove = h === el || h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING;
+        if (!isSelfOrAbove) break;
+        found = h.textContent.trim();
+      }
+      return found;
+    };
+
+    // ---------- panel (shadow DOM: no style can cross in either direction) ----------
+
+    const host = document.createElement('div');
+    host.id = 'polish-overlay-host';
+    host.style.cssText = 'position:fixed;z-index:2147483647;top:0;right:0;';
+    document.body.appendChild(host);
+    const root = host.attachShadow({ mode: 'open' });
+
+    root.innerHTML = `
+      <style>
+        :host { all: initial; }
+        * { box-sizing: border-box; font-family: ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+        .panel {
+          position: fixed; top: 12px; right: 12px; width: 340px; max-height: calc(100vh - 24px);
+          display: flex; flex-direction: column; background: #fff; color: #1a2332;
+          border: 1px solid #d5dde6; border-radius: 10px; box-shadow: 0 8px 30px rgba(16,32,52,.18);
+          font-size: 13px;
+        }
+        .panel.collapsed .body, .panel.collapsed .actions { display: none; }
+        header {
+          display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+          border-bottom: 1px solid #eef2f6; cursor: pointer;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #0e9594; flex: none; }
+        h1 { margin: 0; font-size: 13px; font-weight: 650; flex: 1; }
+        .count { background: #eef4f8; color: #0b6e8f; border-radius: 20px; padding: 1px 8px; font-weight: 600; font-size: 12px; }
+        .chev { color: #8b9bad; font-size: 11px; }
+        .body { overflow-y: auto; padding: 10px 12px; flex: 1; }
+        .hint { color: #5b6b7f; line-height: 1.5; margin: 0 0 10px; }
+        .hint b { color: #1a2332; }
+        .item { border: 1px solid #e6ecf2; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+        .item.active { border-color: #0e9594; box-shadow: 0 0 0 2px rgba(14,149,148,.12); }
+        .item .ctx { color: #8b9bad; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+        .item .orig { color: #5b6b7f; margin-top: 3px; line-height: 1.4; }
+        .item .edit { color: #0b6e8f; margin-top: 4px; line-height: 1.4; }
+        .item .note { color: #1a2332; margin-top: 4px; line-height: 1.4; }
+        .item .tools { display: flex; gap: 8px; margin-top: 6px; }
+        .item button { background: none; border: none; padding: 0; color: #8b9bad; cursor: pointer; font-size: 11.5px; }
+        .item button:hover { color: #b3541e; text-decoration: underline; }
+        .empty { color: #8b9bad; font-style: italic; padding: 6px 0; }
+        .actions { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-top: 1px solid #eef2f6; }
+        button.act {
+          flex: 1; min-width: 96px; padding: 7px 10px; border-radius: 6px; border: 1px solid #d5dde6;
+          background: #fff; color: #1a2332; font-size: 12px; font-weight: 600; cursor: pointer;
+        }
+        button.act:hover { border-color: #0b6e8f; color: #0b6e8f; }
+        button.act.primary { background: #0b6e8f; border-color: #0b6e8f; color: #fff; }
+        button.act.primary:hover { background: #095b76; color: #fff; }
+        button.act.danger:hover { border-color: #b3541e; color: #b3541e; }
+        button.act:disabled { opacity: .45; cursor: not-allowed; }
+        .toast {
+          position: fixed; bottom: 16px; right: 16px; background: #1a2332; color: #fff;
+          padding: 8px 14px; border-radius: 6px; font-size: 12.5px; opacity: 0; transition: opacity .18s;
+        }
+        .toast.show { opacity: 1; }
+        /* Editor popover. Must be fixed, not absolute: the shadow host is a
+           zero-size fixed box pinned to the right edge, so an absolutely
+           positioned child would take its coordinates from that corner and
+           land off-screen. Fixed makes left/top mean viewport coordinates,
+           which is what getBoundingClientRect() gives us. */
+        .editor {
+          position: fixed; width: 340px; background: #fff; border: 1px solid #d5dde6;
+          border-radius: 10px; box-shadow: 0 8px 30px rgba(16,32,52,.22); padding: 12px; display: none;
+        }
+        .editor.open { display: block; }
+        .editor .ctx { color: #8b9bad; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+        label { display: block; font-weight: 600; font-size: 11.5px; margin: 8px 0 3px; }
+        textarea {
+          width: 100%; border: 1px solid #d5dde6; border-radius: 6px; padding: 6px 8px;
+          font-size: 12.5px; line-height: 1.45; resize: vertical; color: #1a2332; font-family: inherit;
+        }
+        textarea:focus { outline: none; border-color: #0b6e8f; box-shadow: 0 0 0 2px rgba(11,110,143,.12); }
+        textarea.text { min-height: 62px; }
+        textarea.note { min-height: 48px; }
+        .editor .row { display: flex; gap: 6px; margin-top: 10px; }
+        .kbd { color: #8b9bad; font-size: 11px; margin-top: 8px; }
+      </style>
+
+      <div class="panel" part="panel">
+        <header title="Collapse or expand">
+          <span class="dot"></span>
+          <h1>Polish mode</h1>
+          <span class="count">0</span>
+          <span class="chev">▾</span>
+        </header>
+        <div class="body">
+          <p class="hint">Click any text in the page body to <b>comment</b> on it or <b>rewrite</b> it. Notes persist across pages — review the whole site, then export once. The nav still works; <b>⌘/Ctrl-click</b> follows a link in the text.</p>
+          <div class="list"><p class="empty">No notes yet.</p></div>
+        </div>
+        <div class="actions">
+          <button class="act primary copy">Copy for Claude</button>
+          <button class="act download">Download JSON</button>
+          <button class="act danger clear">Clear all</button>
+          <button class="act exit">Exit</button>
+        </div>
+      </div>
+
+      <div class="editor">
+        <div class="ctx"></div>
+        <label>Replacement text <span style="font-weight:400;color:#8b9bad">— edit to request a change</span></label>
+        <textarea class="text" spellcheck="true"></textarea>
+        <label>Comment <span style="font-weight:400;color:#8b9bad">— optional</span></label>
+        <textarea class="note" placeholder="What's wrong, or what you want instead…"></textarea>
+        <div class="row">
+          <button class="act primary save">Save note</button>
+          <button class="act cancel">Cancel</button>
+        </div>
+        <p class="kbd">⌘/Ctrl + Enter to save · Esc to cancel</p>
+      </div>
+
+      <div class="toast"></div>
+    `;
+
+    const $ = sel => root.querySelector(sel);
+    const panel = $('.panel');
+    const editor = $('.editor');
+    const listEl = $('.list');
+    const countEl = $('.count');
+    const textArea = $('textarea.text');
+    const noteArea = $('textarea.note');
+
+    const toast = msg => {
+      const t = $('.toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 1600);
+    };
+
+    // ---------- marking annotated elements in the page ----------
+
+    const MARK = 'data-polish-marked';
+    const paint = () => {
+      document.querySelectorAll(`[${MARK}]`).forEach(el => {
+        el.style.outline = '';
+        el.style.backgroundColor = '';
+        el.removeAttribute(MARK);
+      });
+      items
+        .filter(i => i.page === location.pathname)
+        .forEach(i => {
+          const el = document.querySelector(i.selector);
+          if (!el) return;
+          el.setAttribute(MARK, '');
+          el.style.outline = '2px solid #0e9594';
+          el.style.backgroundColor = 'rgba(14,149,148,.07)';
+        });
+    };
+
+    const render = () => {
+      countEl.textContent = String(items.length);
+      if (!items.length) {
+        listEl.innerHTML = '<p class="empty">No notes yet.</p>';
+      } else {
+        listEl.innerHTML = items
+          .map((i, n) => {
+            const here = i.page === location.pathname;
+            const esc = s => (s || '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c]);
+            const trim = s => (s.length > 90 ? s.slice(0, 90) + '…' : s);
+            return `
+              <div class="item ${here ? 'active' : ''}" data-n="${n}">
+                <div class="ctx">${n + 1} · ${esc(here ? i.context || i.tag : i.page)}</div>
+                <div class="orig">“${esc(trim(i.originalText))}”</div>
+                ${i.newText ? `<div class="edit">→ “${esc(trim(i.newText))}”</div>` : ''}
+                ${i.comment ? `<div class="note">💬 ${esc(i.comment)}</div>` : ''}
+                <div class="tools">
+                  ${here ? '<button data-act="show">Show</button>' : `<button data-act="goto">Go to page</button>`}
+                  <button data-act="del">Delete</button>
+                </div>
+              </div>`;
+          })
+          .join('');
+      }
+      paint();
+    };
+
+    listEl.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      const card = e.target.closest('.item');
+      if (!btn || !card) return;
+      const item = items[Number(card.dataset.n)];
+      if (btn.dataset.act === 'del') {
+        items = items.filter(i => i.id !== item.id);
+        save(items);
+        render();
+      } else if (btn.dataset.act === 'show') {
+        document.querySelector(item.selector)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (btn.dataset.act === 'goto') {
+        location.href = `${item.page}?${PARAM}`;
+      }
+    });
+
+    // ---------- hover + click to annotate ----------
+
+    let hovered = null;
+    let target = null;
+
+    // Content only. The nav and footer stay live so you can browse the site
+    // while in polish mode — intercepting every click would trap you on one
+    // page.
+    const selectable = el =>
+      el &&
+      el.closest('main') &&
+      !el.closest('#polish-overlay-host') &&
+      (el.textContent || '').trim().length > 0;
+
+    const clearHover = () => {
+      if (hovered && !hovered.hasAttribute(MARK)) {
+        hovered.style.outline = '';
+        hovered.style.cursor = '';
+      }
+      hovered = null;
+    };
+
+    document.addEventListener('mouseover', e => {
+      if (editor.classList.contains('open')) return;
+      const el = e.target;
+      if (!selectable(el)) return clearHover();
+      if (el === hovered) return;
+      clearHover();
+      hovered = el;
+      if (!el.hasAttribute(MARK)) el.style.outline = '2px dashed #0b6e8f';
+      el.style.cursor = 'crosshair';
+    });
+
+    document.addEventListener(
+      'click',
+      e => {
+        // ⌘/Ctrl-click follows a link normally, even inside the content.
+        if (e.metaKey || e.ctrlKey) return;
+        if (e.target.closest('#polish-overlay-host')) return;
+        const el = e.target;
+        if (!selectable(el)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openEditor(el);
+      },
+      true
+    );
+
+    function openEditor(el) {
+      clearHover();
+      target = el;
+      const existing = items.find(i => i.page === location.pathname && i.selector === selectorFor(el));
+      const original = (el.textContent || '').trim().replace(/\s+/g, ' ');
+
+      $('.editor .ctx').textContent = `${el.tagName.toLowerCase()} · ${contextFor(el) || location.pathname}`;
+      textArea.value = existing?.newText ?? original;
+      noteArea.value = existing?.comment ?? '';
+
+      const r = el.getBoundingClientRect();
+      const width = 340;
+      const left = Math.min(Math.max(8, r.left), window.innerWidth - width - 8);
+      const below = r.bottom + 8;
+      const fitsBelow = below + 260 < window.innerHeight;
+      editor.style.left = `${left}px`;
+      editor.style.top = `${fitsBelow ? below : Math.max(8, r.top - 268)}px`;
+      editor.classList.add('open');
+      noteArea.focus();
+    }
+
+    const closeEditor = () => {
+      editor.classList.remove('open');
+      target = null;
+    };
+
+    const commit = () => {
+      if (!target) return;
+      const original = (target.textContent || '').trim().replace(/\s+/g, ' ');
+      const edited = textArea.value.trim();
+      const comment = noteArea.value.trim();
+
+      if (!comment && edited === original) {
+        toast('Nothing to save');
+        return closeEditor();
+      }
+
+      const selector = selectorFor(target);
+      const item = {
+        id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+        page: location.pathname,
+        sourceHint: sourceHintFor(location.pathname),
+        selector,
+        tag: target.tagName.toLowerCase(),
+        context: contextFor(target),
+        originalText: original,
+        newText: edited && edited !== original ? edited : null,
+        comment: comment || null,
+        createdAt: new Date().toISOString(),
+      };
+
+      items = items.filter(i => !(i.page === item.page && i.selector === selector)).concat(item);
+      save(items);
+      closeEditor();
+      render();
+      toast('Note saved');
+    };
+
+    $('.save').addEventListener('click', commit);
+    $('.cancel').addEventListener('click', closeEditor);
+    editor.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeEditor();
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) commit();
+    });
+
+    // ---------- export ----------
+
+    const asJSON = () =>
+      JSON.stringify(
+        {
+          version: 1,
+          site: location.origin,
+          exportedAt: new Date().toISOString(),
+          items: items.map(({ id, ...rest }) => rest),
+        },
+        null,
+        2
+      );
+
+    const asPrompt = () => {
+      const lines = items.map((i, n) => {
+        const parts = [`${n + 1}. **${i.sourceHint}** — ${i.tag}${i.context ? ` under “${i.context}”` : ''}`];
+        parts.push(`   - Current: “${i.originalText}”`);
+        if (i.newText) parts.push(`   - Replace with: “${i.newText}”`);
+        if (i.comment) parts.push(`   - Comment: ${i.comment}`);
+        parts.push(`   - Selector: \`${i.selector}\` (page ${i.page})`);
+        return parts.join('\n');
+      });
+      return [
+        `Polish pass on the Scientific Agentic Engineering site — ${items.length} requested change${items.length === 1 ? '' : 's'}.`,
+        '',
+        'Apply each of these. "Replace with" is my rewrite of the element text; "Comment" is what I want done. Selectors are from the built page — use the source hint to find the file.',
+        '',
+        ...lines,
+        '',
+        '<details><summary>Same data as JSON</summary>',
+        '',
+        '```json',
+        asJSON(),
+        '```',
+        '',
+        '</details>',
+      ].join('\n');
+    };
+
+    $('.copy').addEventListener('click', async () => {
+      if (!items.length) return toast('Nothing to copy');
+      try {
+        await navigator.clipboard.writeText(asPrompt());
+        toast(`Copied ${items.length} note${items.length === 1 ? '' : 's'}`);
+      } catch {
+        toast('Clipboard blocked — use Download');
+      }
+    });
+
+    $('.download').addEventListener('click', () => {
+      if (!items.length) return toast('Nothing to export');
+      const blob = new Blob([asJSON()], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `polish-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast('Downloaded');
+    });
+
+    $('.clear').addEventListener('click', () => {
+      if (!items.length) return;
+      if (!confirm(`Delete all ${items.length} notes?`)) return;
+      items = [];
+      save(items);
+      render();
+      toast('Cleared');
+    });
+
+    $('.exit').addEventListener('click', () => {
+      location.href = location.pathname;
+    });
+
+    $('header').addEventListener('click', () => panel.classList.toggle('collapsed'));
+
+    // Keep polish mode on while clicking through the site.
+    document.querySelectorAll('a[href]').forEach(a => {
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || url.pathname.startsWith('/decks/')) return;
+      url.searchParams.set(PARAM, '');
+      a.href = url.toString().replace(/=(&|$)/, '$1');
+    });
+
+    render();
+  }
+</script>
