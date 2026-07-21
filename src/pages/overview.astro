@@ -102,30 +102,37 @@ const radarLabels = pollAxes.map((a, i) => {
 const radarInit = fmtPts(pollAxes.map((a, i) => radarPt(i, radarHealth(a.goal, POLL_DEFAULT))));
 const handleInit = pollAxes.map((a, i) => radarPt(i, radarHealth(a.goal, POLL_DEFAULT)));
 
-const deliverables = [
+// Milestone timeline for "What this project is building". Date-anchored: each
+// milestone (Jul/Oct/Jan/Apr) holds the built deliverables that land then.
+// Reference Workflow and the Milestone 3 items follow the SoW wording;
+// dissemination activities (US-RSE report, blog, webinar) are intentionally
+// not listed here — this section is about built artifacts.
+const milestones = [
   {
-    name: 'The Framework',
-    when: 'July 2026',
-    body:
-      'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.',
+    date: 'Jul 2026',
+    items: [
+      { name: 'The Framework', body: 'Tool-agnostic guidance for structuring agents, skills, and MCP servers in scientific workflows, organized around validation loops, human oversight, and domain-specific safeguards.' },
+    ],
   },
   {
-    name: 'The Community Repository',
-    when: 'October 2026',
-    body:
-      'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.',
+    date: 'Oct 2026',
+    items: [
+      { name: 'The Community Repository', body: 'A starter set of scientific MCP server templates, skills such as unit checkers and conservation-law validators, and agent configuration examples.' },
+      { name: 'The Reference Workflow', body: 'A structured exercise: build a simple weather-model error-statistics application with the AI tools of your choice, applying the framework’s principles to avoid documented failure modes — unit confusion, visualization misinterpretation, and precision loss.' },
+    ],
   },
   {
-    name: 'The Reference Workflow',
-    when: 'October 2026',
-    body:
-      'A structured exercise: build a small weather-model error-statistics application with the AI tooling of your choice, and practice catching documented failure modes while you do it.',
+    date: 'Jan 2027',
+    items: [
+      { name: 'Interactive tutorial series', body: '“Building Your First Scientific Agent” — guiding you through the framework and repository tools to build a validated agent for the Reference Workflow.' },
+      { name: 'Failure-mode examples', body: 'Static visual documentation of common failure modes — hallucinated physics, precision loss, unit confusion — drawn from real development experience, so the tutorials can focus on getting it right.' },
+    ],
   },
   {
-    name: 'Tutorials and workshops',
-    when: 'January and April 2027',
-    body:
-      'Hands-on tutorials and live workshops on using AI agents effectively in scientific work, following the reference workflow, with real-time Q&A — recorded and published for anyone who cannot attend.',
+    date: 'Apr 2027',
+    items: [
+      { name: 'Live workshop', body: 'A live workshop following the reference workflow, with real-time Q&A — recorded and published for anyone who cannot attend.' },
+    ],
   },
 ];
 
@@ -425,26 +432,73 @@ const notScope = [
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is building</h2>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
-      The fellowship runs from April 2026 to April 2027 and produces four things.
+      The fellowship runs from April 2026 to April 2027. Four milestones mark what
+      it builds — select one to see what lands.
     </p>
 
-    <dl class="mt-5 space-y-5">
-      {deliverables.map(({ name, when, body }) => (
-        <div>
-          <dt class="flex items-baseline gap-3 flex-wrap">
-            <span class="font-semibold text-gray-900">{name}</span>
-            <span class="text-xs uppercase tracking-wide text-gray-400">{when}</span>
-          </dt>
-          <dd class="mt-1 text-gray-600 leading-relaxed">{body}</dd>
-        </div>
-      ))}
-    </dl>
+    <div id="build-timeline" class="mt-6">
+      <div class="tl" role="tablist" aria-label="Project milestones">
+        <div class="tl-line" aria-hidden="true"></div>
+        {milestones.map((m, i) => (
+          <button type="button" class="tl-node" role="tab" id={`tl-tab-${i}`} aria-controls={`tl-panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+            <span class="tl-dot" aria-hidden="true"></span>
+            <span class="tl-date">{m.date}</span>
+          </button>
+        ))}
+      </div>
+      <div class="tl-panels">
+        {milestones.map((m, i) => (
+          <div class="tl-panel" id={`tl-panel-${i}`} role="tabpanel" aria-labelledby={`tl-tab-${i}`}>
+            <span class="tl-when">{m.date}</span>
+            {m.items.map(it => (
+              <div class="tl-item">
+                <h3 class="tl-item-name">{it.name}</h3>
+                <p class="tl-item-body">{it.body}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
 
     <p class="mt-6 text-gray-600 leading-relaxed">
       The aim throughout is to turn broad AI capability into reliable development
-      instruments: tools a scientist can point at real work and trust the output
-      of, for reasons they can articulate.
+      instruments: tools you can point at real work and trust the output of, for
+      reasons you can articulate.
     </p>
+
+    <script>
+      // Milestone timeline — ARIA tablist with roving tabindex. Progressive
+      // enhancement: panels render server-side (all visible without JS); this
+      // collapses them to one and wires click / hover / arrow-key selection.
+      const tlRoot = document.getElementById('build-timeline');
+      if (tlRoot) {
+        const tlNodes = [...tlRoot.querySelectorAll<HTMLButtonElement>('.tl-node')];
+        const tlPanels = [...tlRoot.querySelectorAll<HTMLElement>('.tl-panel')];
+        const tlSelect = (i: number, focus: boolean) => {
+          tlNodes.forEach((n, j) => {
+            const on = j === i;
+            n.setAttribute('aria-selected', on ? 'true' : 'false');
+            n.tabIndex = on ? 0 : -1;
+            tlPanels[j].hidden = !on;
+          });
+          if (focus) tlNodes[i].focus();
+        };
+        tlNodes.forEach((n, i) => {
+          n.addEventListener('click', () => tlSelect(i, false));
+          n.addEventListener('mouseenter', () => tlSelect(i, false));
+          n.addEventListener('keydown', (e: KeyboardEvent) => {
+            let t: number | null = null;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') t = (i + 1) % tlNodes.length;
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') t = (i - 1 + tlNodes.length) % tlNodes.length;
+            else if (e.key === 'Home') t = 0;
+            else if (e.key === 'End') t = tlNodes.length - 1;
+            if (t !== null) { e.preventDefault(); tlSelect(t, true); }
+          });
+        });
+        tlSelect(0, false);
+      }
+    </script>
 
     <h2 class="mt-12 text-xl font-semibold text-gray-900">What this project is not</h2>
 
@@ -532,6 +586,28 @@ const notScope = [
 
     @media (prefers-reduced-motion: no-preference) {
       #standing-poll .poll-poly-you { transition: all .1s linear; }
+    }
+
+    /* "What this project is building" — milestone timeline */
+    #build-timeline .tl { position: relative; display: flex; }
+    #build-timeline .tl-line { position: absolute; top: 9px; left: 12.5%; right: 12.5%; height: 2px; background: #d1d5db; }
+    #build-timeline .tl-node { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: .55rem; background: none; border: 0; padding: .1rem .25rem .25rem; cursor: pointer; font: inherit; }
+    #build-timeline .tl-dot { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid #d1d5db; transition: all .15s ease; }
+    #build-timeline .tl-date { font-size: .78rem; font-weight: 600; color: #9ca3af; transition: color .15s ease; }
+    #build-timeline .tl-node:hover .tl-dot { border-color: #2563eb; }
+    #build-timeline .tl-node[aria-selected="true"] .tl-dot { background: #2563eb; border-color: #2563eb; box-shadow: 0 0 0 4px #dbeafe; width: 18px; height: 18px; margin-top: -1px; }
+    #build-timeline .tl-node[aria-selected="true"] .tl-date { color: #111827; }
+    #build-timeline .tl-node:focus-visible { outline: none; }
+    #build-timeline .tl-node:focus-visible .tl-dot { box-shadow: 0 0 0 3px #dbeafe, 0 0 0 5px #2563eb; }
+    #build-timeline .tl-panel { margin-top: 1.4rem; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem 1.35rem; min-height: 8rem; }
+    #build-timeline .tl-when { font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: #2563eb; font-weight: 700; }
+    #build-timeline .tl-item { margin-top: .85rem; }
+    #build-timeline .tl-item:first-of-type { margin-top: .55rem; }
+    #build-timeline .tl-item-name { font-size: 1rem; font-weight: 600; color: #111827; margin: 0; }
+    #build-timeline .tl-item-body { margin: .3rem 0 0; color: #4b5563; }
+    #build-timeline .tl-item + .tl-item { padding-top: .85rem; border-top: 1px solid #e5e7eb; }
+    @media (prefers-reduced-motion: reduce) {
+      #build-timeline .tl-dot, #build-timeline .tl-date { transition: none; }
     }
   </style>
 </BaseLayout>
