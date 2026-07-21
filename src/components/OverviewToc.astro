@@ -1,0 +1,86 @@
+---
+// "On this page" table of contents for the single-page Overview. Unlike the
+// Framework's multi-chapter nav, this is a flat list of the page's own H2
+// sections — no chapter list, no prev/next. Styled after the Framework's nested
+// section sub-list (left-border rail, active link in blue). Rendered in both the
+// desktop sidebar and the mobile disclosure; the scroll-spy <script> below runs
+// once per page (Astro dedupes component <script> tags) and highlights whichever
+// section is currently nearest the top of the viewport — across both copies,
+// since it targets every [data-toc-link] on the page.
+interface Section { slug: string; text: string; }
+interface Props {
+  sections: Section[];
+  // The desktop sidebar shows the eyebrow; the mobile disclosure hides it
+  // because its <summary> already reads "On this page".
+  showLabel?: boolean;
+}
+
+const { sections, showLabel = true } = Astro.props;
+---
+
+<nav aria-label="On this page" class="text-sm">
+  {showLabel && (
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">On this page</p>
+  )}
+  <ul class="space-y-0.5 border-l border-gray-200 pl-3">
+    {sections.map((s) => (
+      <li>
+        <a
+          href={`#${s.slug}`}
+          data-toc-link
+          data-slug={s.slug}
+          class="block rounded px-2 py-1 text-[0.8rem] leading-snug text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          {s.text}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script>
+  // Scroll-spy: mark the "on this page" link whose section heading is currently
+  // nearest the top of the viewport. Works without JS too — the links are plain
+  // anchors; this only adds the active-highlight-on-scroll enhancement. Because
+  // the TOC renders twice (desktop + mobile), this targets every [data-toc-link]
+  // and dedupes slugs, so both copies highlight in sync.
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+  if (links.length) {
+    const slugs = [...new Set(links.map((l) => l.dataset.slug))].filter(Boolean) as string[];
+
+    const setActive = (slug: string) => {
+      for (const l of links) {
+        const on = l.dataset.slug === slug;
+        l.classList.toggle('text-blue-700', on);
+        l.classList.toggle('font-medium', on);
+        l.classList.toggle('text-gray-500', !on);
+        if (on) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      }
+    };
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const doc = document.scrollingElement || document.documentElement;
+      // At the page bottom the last sections can't scroll past the trigger line,
+      // so activate the final one directly; otherwise take the last heading above it.
+      let current = slugs[slugs.length - 1];
+      if (window.scrollY + doc.clientHeight < doc.scrollHeight - 2) {
+        current = slugs[0];
+        for (const s of slugs) {
+          const el = document.getElementById(s);
+          if (el && el.getBoundingClientRect().top <= 120) current = s;
+        }
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  }
+</script>
