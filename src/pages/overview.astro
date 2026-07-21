@@ -75,7 +75,7 @@ const pollAxes = [
   { key: 'trust', label: 'Trust', left: 'Blanket rejection', right: 'Blind trust', mid: 'Calibrated', goal: 'center' },
 ];
 const POLL_PHASE = 'before';
-const POLL_DEFAULT = 50;
+const POLL_DEFAULT = 25;
 
 // Radar geometry, precomputed so the skeleton renders server-side (styles apply
 // cleanly, less client DOM-building). The client script recomputes the two data
@@ -523,7 +523,7 @@ const notScope = [
       however fast the landscape shifts around them — it aims at practices that
       hold in general rather than at any single product. That keeps it useful as
       tools come and go, and useful across the community rather than only to
-      whoever happens to share your stack.
+      whoever happens to share a specific stack.
     </p>
 
     <p class="mt-3 text-gray-600 leading-relaxed">
@@ -543,7 +543,7 @@ const notScope = [
 
     <div class="mt-8 rounded-lg bg-gray-50 border border-gray-200 px-5 py-4">
       <p class="text-sm text-gray-600 leading-relaxed">
-        <strong class="text-gray-900">A note on institutional policy.</strong>
+        <strong class="text-gray-900">A note on institutional policy.</strong>{' '}
         Always follow your institution’s current guidance on AI-tool use —
         especially in sensitive roles. Tools and policies are both evolving
         quickly, and this site is not a substitute for either.
