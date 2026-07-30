@@ -1,0 +1,105 @@
+---
+// Framework contents: the chapter list (navigation) with the current chapter's
+// section headings nested beneath it (table of contents). Rendered in both the
+// desktop sidebar and the mobile disclosure; the scroll-spy script below runs
+// once per page (Astro dedupes component <script> tags) and highlights whichever
+// section is currently at the top of the viewport.
+interface Heading { depth: number; slug: string; text: string; }
+interface Chapter { slug: string; title: string; order: number; }
+interface Props {
+  chapters: Chapter[];
+  currentSlug: string;
+  headings: Heading[];
+}
+
+const { chapters, currentSlug, headings } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const toc = headings.filter((h) => h.depth === 2);
+---
+
+<nav aria-label="Framework contents" class="text-sm">
+  <ol class="space-y-0.5">
+    {chapters.map((ch) => {
+      const isCurrent = ch.slug === currentSlug;
+      return (
+        <li>
+          <a
+            href={`${base}framework/${ch.slug}/`}
+            aria-current={isCurrent ? 'page' : undefined}
+            class:list={[
+              'group flex gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+              isCurrent
+                ? 'bg-blue-50 text-blue-700 font-semibold'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+            ]}
+          >
+            <span class:list={['tabular-nums', isCurrent ? 'text-blue-400' : 'text-gray-400']}>{ch.order}</span>
+            <span>{ch.title}</span>
+          </a>
+
+          {isCurrent && toc.length > 0 && (
+            <ul class="mt-1 mb-2 ml-[1.65rem] space-y-0.5 border-l border-gray-200 pl-3">
+              {toc.map((h) => (
+                <li>
+                  <a
+                    href={`#${h.slug}`}
+                    data-toc-link
+                    data-slug={h.slug}
+                    class="block rounded px-2 py-1 text-[0.8rem] leading-snug text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+<script>
+  // Scroll-spy: mark the "on this page" link whose section heading is currently
+  // nearest the top of the viewport. Works without JS too — the links are plain
+  // anchors; this only adds the active-highlight-on-scroll enhancement.
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+  if (links.length) {
+    const slugs = [...new Set(links.map((l) => l.dataset.slug))].filter(Boolean) as string[];
+
+    const setActive = (slug: string) => {
+      for (const l of links) {
+        const on = l.dataset.slug === slug;
+        l.classList.toggle('text-blue-700', on);
+        l.classList.toggle('font-medium', on);
+        l.classList.toggle('text-gray-500', !on);
+        if (on) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      }
+    };
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const doc = document.scrollingElement || document.documentElement;
+      // At the page bottom the last sections can't scroll past the trigger line,
+      // so activate the final one directly; otherwise take the last heading above it.
+      let current = slugs[slugs.length - 1];
+      if (window.scrollY + doc.clientHeight < doc.scrollHeight - 2) {
+        current = slugs[0];
+        for (const s of slugs) {
+          const el = document.getElementById(s);
+          if (el && el.getBoundingClientRect().top <= 120) current = s;
+        }
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  }
+</script>

@@ -1,16 +1,97 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import FrameworkNav from '../components/FrameworkNav.astro';
+import { getCollection } from 'astro:content';
 
+interface Heading { depth: number; slug: string; text: string; }
 interface Props {
   title: string;
   description: string;
+  slug: string;
+  headings: Heading[];
 }
 
-const { title, description } = Astro.props;
+const { title, description, slug, headings } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+// The ordered chapter list drives the sidebar, the prev/next links, and the
+// "N of total" position indicator — all computed from the collection, never
+// hand-maintained.
+const chapters = (await getCollection('framework'))
+  .filter((e) => !e.data.draft)
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((e) => ({ slug: e.id, title: e.data.title, order: e.data.order }));
+
+const total = chapters.length;
+const idx = chapters.findIndex((c) => c.slug === slug);
+const current = idx >= 0 ? chapters[idx] : null;
+const prev = idx > 0 ? chapters[idx - 1] : null;
+const next = idx >= 0 && idx < total - 1 ? chapters[idx + 1] : null;
 ---
 
 <BaseLayout title={`${title} — Scientific Agentic Engineering`} description={description}>
-  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-gray">
-    <slot />
-  </article>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:flex lg:gap-10">
+    <!-- Desktop sidebar: chapter navigation + current chapter's sections -->
+    <aside class="hidden lg:block lg:w-52 lg:flex-none">
+      <div class="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto pb-6 pr-1">
+        <a
+          href={`${base}framework/`}
+          class="block text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors mb-3"
+        >
+          The Framework
+        </a>
+        <FrameworkNav chapters={chapters} currentSlug={slug} headings={headings} />
+      </div>
+    </aside>
+
+    <!-- Content column -->
+    <div class="min-w-0 lg:flex-1">
+      <div class="max-w-3xl mx-auto lg:mx-0">
+        <!-- Mobile disclosure: same navigation, collapsed by default -->
+        <details class="lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50/70">
+          <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-700 marker:text-gray-400">
+            Contents{current ? ` · ${current.order} of ${total}` : ''}
+          </summary>
+          <div class="border-t border-gray-200 px-4 py-3">
+            <a href={`${base}framework/`} class="block text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 mb-2">
+              The Framework
+            </a>
+            <FrameworkNav chapters={chapters} currentSlug={slug} headings={headings} />
+          </div>
+        </details>
+
+        <article class="prose prose-gray">
+          <slot />
+        </article>
+
+        <!-- Prev / next chapter -->
+        {(prev || next) && (
+          <nav class="mt-16 pt-6 border-t border-gray-200 grid grid-cols-2 gap-4" aria-label="Chapter navigation">
+            <div>
+              {prev && (
+                <a
+                  href={`${base}framework/${prev.slug}/`}
+                  class="group block h-full rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors"
+                >
+                  <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">← Previous</span>
+                  <span class="mt-1 block font-medium text-gray-900 group-hover:text-blue-600">{prev.title}</span>
+                </a>
+              )}
+            </div>
+            <div>
+              {next && (
+                <a
+                  href={`${base}framework/${next.slug}/`}
+                  class="group block h-full rounded-lg border border-gray-200 p-4 text-right hover:border-blue-300 transition-colors"
+                >
+                  <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">Next →</span>
+                  <span class="mt-1 block font-medium text-gray-900 group-hover:text-blue-600">{next.title}</span>
+                </a>
+              )}
+            </div>
+          </nav>
+        )}
+      </div>
+    </div>
+  </div>
 </BaseLayout>
