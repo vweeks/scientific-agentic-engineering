@@ -3,6 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const base = import.meta.env.BASE_URL;
 
+// Slug for per-term anchors, so chapters can deep-link a definition.
+const slug = (term) =>
+  term.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
 const groups = [
   {
     heading: 'The methodology',
@@ -10,27 +14,37 @@ const groups = [
       {
         term: 'Scientific Agentic Engineering (SAE)',
         def:
-          'Applying agentic engineering to scientific software: turning broad AI capability into reliable scientific instruments. Tool-agnostic by design — principles over products, because products change faster than practices.',
+          'Applying agentic engineering to scientific software, so that a result produced with AI assistance can be checked, reproduced, and defended.',
       },
       {
         term: 'Agentic engineering',
         def:
-          'Directing AI agents that plan, act, and use tools, rather than writing every line yourself. The term is Andrej Karpathy’s (2026), offered as the successor to “vibe coding” (2025).',
+          'Directing AI agents that plan, act, and use tools, rather than writing every line yourself.',
       },
       {
         term: 'Validation loop',
         def:
-          'The first principle: domain checks at each decision point — units, conservation, precision, provenance — so that errors are caught where they are made rather than where they surface.',
+          'The first principle: a check at each decision point that can actually fail and whose result gates what proceeds, so that errors are caught where they are made rather than where they surface. For scientific work, what the check contains comes from domain-specific safeguards.',
       },
       {
         term: 'Human-in-the-loop oversight',
         def:
-          'The second principle: concentrate human review on the decisions that matter, and accept lighter review elsewhere. Which decisions those are is project-specific — the language a prototype is written in may be incidental, while in a code base expected to match its neighbors it is not. Recurring cases include decisions that later work will inherit without re-examining, and decisions that steer the agent itself, since a wrong assumption early pollutes everything that follows it. The framework treats this at length. The point here is that review is a finite resource, and spreading it evenly spends it on decisions that did not need it.',
+          'The second principle: concentrate human review on the decisions that matter, and accept lighter review elsewhere. Which decisions those are is project-specific; the recurring cases are decisions later work inherits without re-examining, and decisions that steer the agent itself.',
+      },
+      {
+        term: 'Provenance',
+        def:
+          'The third principle: the record of where code, data, and decisions came from — including which parts an agent produced, and who approved them — kept as the work happens. Reproducibility of an AI-assisted result depends on it.',
+      },
+      {
+        term: 'Context discipline',
+        def:
+          'The fourth principle: keep each actor working from what its task needs — current, and no more. Fresh context, scoped sub-agents, and clearing a spent session all serve it. Its absence is context bloat and scope drift, where stale or excess context corrupts a result that still looks right.',
       },
       {
         term: 'Domain-specific safeguard',
         def:
-          'The third principle: checks that only make sense in a scientific context — physics checks, precision tests, scope-drift containment, tech-stack provenance.',
+          'The fifth principle, and the one scientific work adds: checks that only make sense in a scientific context — physics checks, precision tests, bound checks, scope-drift containment.',
       },
     ],
   },
@@ -40,32 +54,32 @@ const groups = [
       {
         term: 'Agent',
         def:
-          'An AI system that pursues a goal by planning and taking actions — reading files, running commands, calling tools — rather than only emitting text for a human to act on.',
+          'An AI system that pursues a goal by planning and taking actions — reading files, running commands, calling tools — rather than only emitting text for a human to act on. On this site the term means development agents working in a workspace you control; general-purpose assistants that act across applications and accounts carry a different security surface and are out of scope here.',
       },
       {
         term: 'Sub-agent',
         def:
-          'A scoped agent launched by a session to carry out a bounded task, typically with restricted tools and a fresh context. Isolation is the point, for the same reason code review is: the reviewer is not the author. You already proofread your own work before opening the pull request, so reading it again yourself turns up nothing. An agent carrying the context of its own design decisions is in the same position — it will tend to confirm them, and if you ask it for tests, it will write tests that pass against the code as written rather than against the behavior you actually wanted.',
+          'A scoped agent launched by a session to carry out a bounded task, typically with restricted tools and a fresh context. Isolation is the point: it cannot confirm reasoning it never saw.',
       },
       {
         term: 'Skill',
         def:
-          'A packaged, reusable capability an agent can invoke — for example a unit checker or a conservation-law validator. Skills are how domain knowledge becomes something the agent can actually run.',
+          'A packaged, reusable capability an agent can invoke by name — for example a unit checker or a conservation-law validator.',
       },
       {
         term: 'MCP server (Model Context Protocol)',
         def:
-          'A standard interface that exposes tools and data to an agent — reading a dataset, querying a catalog, calling an instrument API. Structured access to the real thing, in place of recollection of it.',
+          'A standard interface that exposes tools and data to an agent — reading a dataset, querying a catalog, calling an instrument API.',
       },
       {
         term: 'Tool use',
         def:
-          'An agent calling an external function instead of guessing the answer. A model that can look something up should not be left to remember it.',
+          'An agent calling an external function instead of answering from recall.',
       },
       {
         term: 'Context',
         def:
-          'The working memory of a session: everything the model can currently see. It is finite, and what falls out of it is not flagged as missing.',
+          'The working memory of a session: everything the model can currently see. It is finite.',
       },
     ],
   },
@@ -75,7 +89,7 @@ const groups = [
       {
         term: 'Planning mode',
         def:
-          'The agent proposes what it intends to do and waits for approval before acting — the cheapest checkpoint available, since a wrong plan costs a sentence to correct.',
+          'The agent proposes what it intends to do and waits for approval before acting.',
       },
       {
         term: 'Guard-railed session',
@@ -85,29 +99,24 @@ const groups = [
       {
         term: 'Autonomous hand-off',
         def:
-          'A long-running agent acting broadly on its own with few checkpoints before it acts. The most convenient mode of work and the highest-risk one.',
-      },
-      {
-        term: 'Provenance',
-        def:
-          'The record of where code, data, and decisions came from — including which parts an agent produced, and who approved them. Reproducibility of an AI-assisted result depends on it.',
+          'A long-running agent acting broadly on its own with few checkpoints before it acts. The most convenient mode of work, and the one that puts the most weight on checks set up in advance.',
       },
     ],
   },
   {
     heading: 'Failure modes',
     intro:
-      'Each of these can produce corrupted results that still pass CI: the program runs, the tests go green, and the number it prints is wrong.',
+      'Some of these produce a wrong result that survives every check; others spend review in the wrong place or widen what a mistake touches. What they share is that a general-purpose workflow is not looking for them. The framework chapter on how scientific code fails works through each.',
     terms: [
       {
         term: 'Unit confusion',
         def:
-          'Quantities combined or converted in the wrong units — the arithmetic is valid, the physics is not.',
+          'Quantities combined or converted in the wrong units, so that valid arithmetic produces a physically wrong answer.',
       },
       {
         term: 'Precision loss',
         def:
-          'Numerically careless operations — catastrophic cancellation, recomputation from rounded intermediates — that quietly degrade a result while every test still passes.',
+          'Numerically careless operations — catastrophic cancellation, recomputation from rounded intermediates — that degrade a result without breaking anything.',
       },
       {
         term: 'Subtle physics violations',
@@ -122,12 +131,12 @@ const groups = [
       {
         term: 'Context bloat',
         def:
-          'More context is not more signal. Long sessions drift as the window fills; key details get buried and quality slips without an error message.',
+          'Long sessions drift as the window fills; key details get buried and quality slips without an error message.',
       },
       {
         term: 'Over-trust',
         def:
-          'Fluent is not correct. Quietly wrong output reads exactly like correct output, so an answer’s confidence is not evidence of its accuracy. The check has to come from somewhere other than the context that produced the answer — a test, a validator, a sub-agent reviewing with fresh context, or a human.',
+          'Quietly wrong output reads exactly like correct output, so an answer’s confidence is not evidence of its accuracy. The check has to come from outside the context that produced the answer.',
       },
       {
         term: 'Scope drift',
@@ -163,7 +172,10 @@ const groups = [
           {intro && <p class="mt-3 text-gray-600 leading-relaxed">{intro}</p>}
           <dl class="mt-5 space-y-5">
             {terms.map(({ term, def }) => (
-              <div>
+              <div
+                id={slug(term)}
+                class="scroll-mt-24 -ml-3 border-l-2 border-transparent pl-3 transition-colors target:border-blue-600 target:bg-blue-50"
+              >
                 <dt class="font-semibold text-gray-900">{term}</dt>
                 <dd class="mt-1 text-gray-600 leading-relaxed">{def}</dd>
               </div>
@@ -177,4 +189,5 @@ const groups = [
       New to this? Start with the <a href={`${base}overview/`} class="text-blue-600 hover:underline">Overview</a>.
     </p>
   </div>
+
 </BaseLayout>

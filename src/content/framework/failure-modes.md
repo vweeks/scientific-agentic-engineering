@@ -1,6 +1,6 @@
 ---
 title: "How scientific code fails"
-description: "The specific failures the principles defend against — failures where the agent gets the science wrong, and process failures that let a wrong answer through — and where in the loop each should be caught."
+description: "The specific failures the principles defend against — failures where the agent gets the science wrong, and process failures that let a wrong answer through — and where in the workflow each should be caught."
 order: 3
 draft: false
 ---
@@ -11,18 +11,18 @@ The principles are a defense. This chapter is what they defend against.
 
 ## The signature
 
-Almost every failure that matters here has the same signature: the program runs, the tests pass, and the number it prints is wrong. There is no crash to trace and no red mark to chase. That is what makes scientific code the hard case. In most software a wrong answer is usually apparent before long — a page renders wrong, a request errors, a user complains. A wrong scientific result can sit inside a correct-looking pipeline indefinitely, because the only thing that would reveal it is a domain check nobody ran.
+The failures in this chapter are not all alike. The ones that do the most damage share a signature: nothing visible goes wrong. No crash, no failing test, no red mark. Silent failure is not unique to science, so that alone does not make this the hard case. What does is that nothing downstream will correct you — a wrong result can sit inside a correct-looking pipeline indefinitely, because the only thing that would reveal it is a domain check somebody decided to run.
 
-Two properties of the tools make this worse rather than better. An agent's output is *fluent* — it reads as confident and well-formed whether or not it is right, so tone carries no information about correctness. And an agent is *plausible by construction* — it produces the answer that looks like the answer, which is precisely the failure mode a system built on plausibility cannot self-correct. The check has to come from somewhere other than the thing that produced the answer.
+Two properties of the tools make this worse. An agent's output is *fluent*: it reads as confident and well-formed whether or not it is right, so tone carries no information about correctness. And when the same model writes both the code and the check on it, agreement between them is not evidence, for the reason the [introduction](/scientific-agentic-engineering/framework/introduction/) sets out. Independence has to come from somewhere else.
 
-It is worth being clear about scope. Other software has bugs like these too. What is distinctive about scientific work is that these are *the* failures to guard against, they are common enough to plan around, and the general-purpose safety net is not positioned to catch any of them.
+Other software has bugs like these too. What is distinctive about scientific work is that these are *the* failures to guard against, they are common enough to plan around, and the general-purpose safety net is not positioned to catch any of them.
 
 ## Domain failures: what the agent gets the science wrong about
 
 These are errors in the content of the work — the science itself is wrong, while the code that expresses it is fine.
 
 - **Unit confusion** — quantities combined or converted in the wrong units. The arithmetic is valid; the physics is not.
-- **Precision loss** — numerically careless operations, such as catastrophic cancellation or recomputation from rounded intermediates, that quietly degrade a result while every test still passes.
+- **Precision loss** — numerically careless operations, such as catastrophic cancellation or recomputation from rounded intermediates, that degrade a result without breaking anything.
 - **Subtle physics violations** — code that runs and returns plausible numbers while breaking a conservation law, a boundary condition, or a physical bound.
 - **Visualization misinterpretation** — a figure that is technically produced from the data and still tells the reader something false: a mislabeled unit, a misleading colormap, a truncated axis.
 
@@ -30,23 +30,23 @@ These are errors in the content of the work — the science itself is wrong, whi
 
 These are errors in the way of working — the science might have been checkable, but the workflow did not check it, or checked it in a way that could not fail.
 
-- **False success** — a check that reports success without testing anything: a tolerance loose enough to pass on any input, a gate that returns green when the job it was watching stalled, a suite that runs the code without asserting on the result. The most dangerous failure in the catalog, because it actively certifies the wrong answer.
-- **Hallucinated APIs, physics, or data** — an agent confidently using a function, a flag, a dataset, or a physical relationship that does not exist, or does not mean what it was used to mean. Fluent and specific, and therefore easy to accept.
-- **Context bloat** — long sessions drift as the window fills; details established early get buried, and nothing warns you when they do.
-- **Scope drift** — the work wanders from the task that was framed. An agent asked to fix one function returns a refactored module, and the change nobody asked for becomes the change nobody reviews.
-- **Over-trust** — accepting fluent output because it is fluent. Not a property of the model so much as of the reader, which is why it is on this list.
+- **False success** — a check that reports success without testing anything: a tolerance loose enough to pass on any input, a gate that returns green when the job it was watching stalled, a suite that runs the code without asserting on the result. It is the most dangerous failure in the catalog, because it actively certifies the wrong answer. It is also easy to introduce without intending to: when the same agent writes the check and the code it checks, the check can end up shaped to pass that code rather than to test it.
+- **Hallucinated APIs, physics, or data** — the agent builds on a function, a flag, a dataset, or a physical relationship that does not exist, or that does not mean what it was used to mean. Because the invention is fluent and specific, it is easy to accept.
+- **Context bloat** — long sessions drift as the window fills; details established early get buried, and nothing warns you when they do. The reverse also happens: something rejected early can resurface later as if it had been decided, especially after the context is summarized, and the agent builds to the wrong spec. The detail does not even have to come from the work itself. Answering an ordinary question about the code, such as why one approach was used instead of another, puts the alternative into the context, and a later summary can flatten the explanation of why it was rejected into a record that it was chosen.
+- **Scope drift** — the work wanders from the task that was framed. An agent asked to fix one function returns a refactored module. The extra work arrives already done, and gets reviewed as though someone had asked for it.
+- **Over-trust** — accepting fluent output because it is fluent. This is mostly a property of the reader rather than the model, and no less costly for it. Agents are susceptible too: when work is split across several, one agent's confident but wrong report can be taken as ground truth by the rest.
 
-This taxonomy is larger than the four-item list this project started from, and it is drawn from observed episodes across real projects rather than imagined in advance. It is not meant to be complete — the point is not to enumerate every way code can be wrong, but to name the failures that a general-purpose workflow does not look for, so that a scientific one can.
+This taxonomy is drawn from observed episodes across real projects. It is not exhaustive, and not every failure in it is unique to scientific work; it names what a general-purpose workflow may not look for, so that a scientific one can.
 
 ## Where each failure is caught
 
-Naming a failure is only useful if you know where to stand to catch it. Each maps to a stage of [the loop](/scientific-agentic-engineering/framework/the-loop/):
+Each failure maps to a stage of [the workflow](/scientific-agentic-engineering/framework/the-loop/):
 
 - **Unit confusion, precision loss, physics violations** — caught by a domain check at the **verify** stage, at best one that refuses to run at all when a physical condition is violated.
 - **Visualization misinterpretation** — caught at **verify**, by checking the figure against the data it claims to show rather than by looking at whether a figure was produced.
 - **False success** — caught by making the **verify** check adversarial: a reviewer with fresh context whose job is to make the test fail, not confirm it passes.
 - **Hallucinated APIs, physics, or data** — caught early, at **plan** and **critique**, before the fabrication is built on; and at **verify** by running against the real thing instead of the agent's memory of it.
 - **Scope drift** — caught at **frame**, where the scope is fixed, and contained at **implement** by holding the work to the plan it was approved under.
-- **Context bloat and over-trust** — caught structurally: by fresh context at **critique** and **verify** (a reader that never saw the reasoning it is checking), and at the **gate** (a human deciding, rather than watching).
+- **Context bloat and over-trust** — caught structurally: by fresh context at **critique** and **verify**, and by a human deciding at the points that are hard to undo rather than watching the work go by.
 
-The mapping is the argument for the loop: a failure has a place it is cheapest to catch, and a workflow organized around those places catches more of them than diligence applied evenly.
+The mapping is the argument for the workflow: each failure has a stage where catching it is cheap and stages where it is not. Whether organizing the work that way catches more of them in practice remains to be seen.

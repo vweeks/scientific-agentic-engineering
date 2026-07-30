@@ -7,34 +7,36 @@ draft: false
 
 # Introduction
 
-Scientific Agentic Engineering is a methodology for integrating AI coding agents into scientific software development workflows. Research software has not settled on these tools, and there is no single story about where it stands: practitioners differ in how far they have adopted them, how much they trust them, and how closely they have been able to follow the pace of change. Wariness of a tool that can produce a plausible wrong answer is reasonable. This framework is meant to serve that whole range — techniques for using these tools effectively while keeping their failures out of the results, wherever you are starting from.
+**[Agentic engineering](/scientific-agentic-engineering/glossary/#agentic-engineering)** is directing AI agents that plan, act, and use tools, rather than writing every line yourself. Getting working code out of an agent is easy, and getting easier. Getting the code you actually meant, robust enough to rely on, is the part that takes skill.
 
-The problem it addresses is narrow and specific. AI agents got good at writing code quickly, and they fail in a way that matters more in science than almost anywhere else: they produce results that are wrong but survive every check a project already runs. The code runs, the tests pass, and the number it prints is physically meaningless. A general-purpose workflow is not looking for that. A scientific one has to.
+The bugs agents produce are mostly familiar ones. What is new is the standing of the checks you already run. A test counts as evidence because someone decided what correct behavior was independently of the code, then wrote that down. When one model produces the implementation *and* the test for it from the same context and the same assumptions, agreement between them stops being informative: the suite still passes, but its passing no longer counts as evidence. Better tests do not fix this, because the tests are what changed.
+
+That is true of any software, and it bites hardest where nothing downstream will catch the error for you. A billing error turns up in the revenue; a broken page is visible to anyone who opens it. A wrong diffusion coefficient produces a plausible number that gets built on, and the error stays undetected, sometimes all the way to publication. [How scientific code fails](/scientific-agentic-engineering/framework/failure-modes/) catalogs the specific ways this happens — unit confusion, precision loss, a violated conservation law, a figure that misrepresents a correct result, a check that cannot fail — and what makes them worth planning around together is that the general-purpose safety net is aimed at none of them.
+
+So the framework is mostly general discipline, applied where it is least optional. Four of its five principles hold for any software built with agents. The fifth is what scientific work adds: checks that only mean something against a conservation law, a unit convention, or a real dataset. Models increasingly propose such checks themselves. Whether a proposed check is the invariant your result actually depends on is a claim about your science, and the responsibility for that claim stays with you. Scientific Agentic Engineering is that combination.
 
 ## What this framework is
 
-It is a set of principles, and a way of working that puts them into practice.
+Five principles run through the framework: **validation loops**, **human-in-the-loop oversight**, **provenance**, **context discipline**, and **domain-specific safeguards**. The next chapter takes each in turn.
 
-The principles are three, and they are the same three named across this project: **validation loops**, **human-in-the-loop oversight**, and **domain-specific safeguards**. They are claims about what has to be true of a workflow before you can trust its output — not claims about which tools you use to get there. The next chapter develops each one.
-
-The way of working is a single loop — frame, plan, critique, implement, verify, gate, record — that the principles run inside. It is not a novel invention; it is the shape that careful practitioners already converge on, written down so it can be taught, checked, and reused. It is also, deliberately, the skeleton of the Reference Workflow exercise and the tutorials that come later in the project.
+The way of working is a short sequence of stages — frame, plan and critique, implement, verify — that every task runs through, with decisions recorded across all of them. You loop back through the stages as the work teaches you something, and the principles operate inside. None of it is new: it is the shape careful practitioners already converge on, written down so it can be taught, checked, and reused. It is also, by design, the backbone of the Reference Workflow exercise and the tutorials later in the project.
 
 ## How to read it
 
 The draft is organized to be read in order, but each chapter stands on its own.
 
-1. **[The three principles](/scientific-agentic-engineering/framework/principles/)** — what has to be true of a workflow you can trust.
+1. **[The five principles](/scientific-agentic-engineering/framework/principles/)** — the workflow properties that catch an agent's failures before they reach the result.
 2. **[How scientific code fails](/scientific-agentic-engineering/framework/failure-modes/)** — the specific failures the principles defend against, and why the checks a project already runs do not catch them.
-3. **[The validated agentic loop](/scientific-agentic-engineering/framework/the-loop/)** — the process that operationalizes the principles, stage by stage, with a minimum version for anyone working alone in a single chat window.
-4. **[Structuring the workflow](/scientific-agentic-engineering/framework/structure/)** — where the safeguards live: the project's standing instructions, the procedures an assistant can run, its access to real systems, and the shape of the agents themselves.
-5. **[The pattern catalog](/scientific-agentic-engineering/framework/patterns/)** — named practices, each tied to the stage of the loop it serves and the failure it counters, with a picture of what its absence looks like.
+3. **[The workflow](/scientific-agentic-engineering/framework/the-loop/)** — the process that operationalizes the principles, stage by stage, starting with the plain version you can run with a single assistant in one chat window.
+4. **[Structuring the workflow](/scientific-agentic-engineering/framework/structure/)** — where the safeguards live: the layered places guidance can sit, the constraints you enforce rather than state, the skills that make checks repeatable, and the shape of the agents themselves.
+5. **[The pattern catalog](/scientific-agentic-engineering/framework/patterns/)** — named practices, each tied to the stage of the workflow it serves and the failure it counters, with a picture of what its absence looks like.
 
-Where this draft names a specific tool, it does so as an example; the claims are meant to outlast any particular one.
+This draft names specific tools only as illustration — the claims are written to outlast any particular one.
 
-If you are new to the vocabulary — agents, skills, MCP servers, validation loops — the [glossary](/scientific-agentic-engineering/glossary/) defines the project's core terms, and the [overview](/scientific-agentic-engineering/overview/) sets up why scientific code is the hard case.
+If you are new to the vocabulary — agents, skills, MCP servers, validation loops — the [glossary](/scientific-agentic-engineering/glossary/) defines the project's core terms, and the [overview](/scientific-agentic-engineering/overview/) makes the case for the project as a whole.
 
 ## A note on the evidence
 
-The practices here are not aspirational. They come from real scientific-software projects built with AI agents — cases where a check caught a wrong answer before it shipped, and cases where nothing did. That is the framework's strongest material and its clearest limitation in the same breath: the evidence so far is narrow — largely one practitioner's work, on one vendor's tools. Two consequences follow, and the framework is built around both. Every practice is written tool-agnostically, as what has to be true of a workflow rather than which product makes it true; and the evidence base is meant to widen through episodes contributed by others as the project's community repository grows. Where you read that a practice catches a particular failure, read it as *observed to catch*, not *guaranteed to*.
+These practices come from real scientific-software projects built with AI agents, rather than from speculation about how such work ought to go. The evidence is also narrow: largely one practitioner's work, on one vendor's tools, over one year. So each practice is stated provisionally — where you read that something catches a particular failure, read it as *observed to catch*, not *guaranteed to*. The episodes behind them are being written up as they are cleared for publication. Until those appear here, treat the specifics on this site as claims to be tested rather than results to cite.
 
-This is a Milestone 1 draft (July 2026), published to be read and argued with.
+This is a Milestone 1 draft (July 2026) of the fellowship project *Maintaining Scientific Rigor in AI-Assisted Development: A Validation-Focused Methodology*, published to be read and argued with.
