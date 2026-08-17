@@ -52,10 +52,22 @@ Write as a neutral technical observer, not as marketing. The log should read lik
 - **M3** (due Jan 2027): Failure mode exhibits + Full tutorial series
 - **M4** (due April 2027): Workshop recordings, HPC webinar, BSSw.io blog post
 
+## Required Funding Statements
+
+**Acknowledgement statement** — must appear verbatim (no paraphrasing) in the site footer (all pages) and on the About page, and in any other published content (README, papers, slides, posters, etc.) produced for this project:
+
+> This work was supported by the Better Scientific Software Fellowship Program, a collaborative effort of the U.S. Department of Energy (DOE), Office of Advanced Scientific Research via ANL under Contract DE-AC02-06CH11357 and the National Nuclear Security Administration Advanced Simulation and Computing Program via LLNL under Contract DE-AC52-07NA27344; and by the National Science Foundation (NSF) via SHI under Grant No. 2435328.
+
+**Disclaimer** — must accompany the acknowledgement statement in all published content **except** articles or papers published in scientific, technical, or professional journals:
+
+> Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the DOE or NSF.
+
+When adding a new page, document, or deliverable, include both (acknowledgement always; disclaimer unless it's journal-published) rather than assuming the footer alone covers it — standalone documents (PDFs, slide decks, the milestone report) need their own copy.
+
 ## Conventions
 
 - **Licensing**: Content is CC-BY-4.0 (`LICENSE-CONTENT`), code is MIT (`LICENSE-CODE`)
-- **BSSw acknowledgment**: Must appear on every page footer and in README
+- **BSSw acknowledgment**: See "Required Funding Statements" above — exact wording required, not a paraphrase
 - **Component naming**: PascalCase `.astro` files in `src/components/`
 - **Content Collections**: Typed schemas in `src/content/config.ts`, one collection per deliverable type
 - **Commit style**: Focused commits; split foundation/structure/CI into separate commits
