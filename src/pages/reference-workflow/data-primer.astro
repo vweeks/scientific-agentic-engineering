@@ -1,0 +1,162 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const sections = [
+  { slug: 'previous-runs', text: 'The Previous Runs API' },
+  { slug: 'era5-reference', text: 'ERA5 via the Archive API' },
+  { slug: 'response-anatomy', text: 'Anatomy of a response' },
+  { slug: 'verified-behaviors', text: 'Verified behaviors' },
+  { slug: 'good-citizen', text: 'Being a good citizen' },
+];
+---
+
+<RwLayout
+  title="Data primer — Reference Workflow"
+  description="What the Open-Meteo Previous Runs and Archive APIs actually return: lead semantics, units, missing values, and the behaviors worth knowing before your agent assumes otherwise."
+  current="data-primer"
+  sections={sections}
+>
+    <h1 class="text-3xl font-bold text-gray-900">Data primer</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      Background on the two APIs the exercise uses, for when you want the details.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        The exercise uses two public <a href="https://open-meteo.com/">Open-Meteo</a> endpoints:
+        one that serves each model's forecasts <em>as they were issued</em>, and one that serves
+        the ERA5 reanalysis the forecasts are scored against. Everything below is something your
+        agent will otherwise assume; the dated items at the end are behaviors verified directly
+        against the live API.
+      </p>
+
+      <h2 id="previous-runs">Forecasts: the Previous Runs API</h2>
+      <p>
+        <code>https://previous-runs-api.open-meteo.com/v1/forecast</code> returns, for each
+        requested variable, one series per forecast lead. Appending
+        <code>_previous_day0</code> through <code>_previous_day7</code> to a variable name selects
+        the run: for a given valid hour, <code>temperature_2m_previous_day2</code> is what the
+        model's run from two days earlier predicted for that same hour. <code>previous_day0</code>
+        is the most recent run's value. Runs are archived from January 2024 onward.
+      </p>
+      <p>A worked example (one point on the Colorado Front Range, one model, one lead):</p>
+      <pre><code>https://previous-runs-api.open-meteo.com/v1/forecast
+    ?latitude=40.0&amp;longitude=-105.0
+    &amp;start_date=2026-08-31&amp;end_date=2026-09-06
+    &amp;hourly=temperature_2m_previous_day1
+    &amp;models=gfs_global
+    &amp;timezone=GMT</code></pre>
+      <p>The exercise's four models, chosen to pair two kinds of forecasting:</p>
+      <table>
+        <thead>
+          <tr><th>Model parameter</th><th>What it is</th><th>Kind</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>gfs_global</code></td><td>NOAA GFS</td><td>Physics-based (NWP)</td></tr>
+          <tr><td><code>ecmwf_ifs025</code></td><td>ECMWF IFS, 0.25°</td><td>Physics-based (NWP)</td></tr>
+          <tr><td><code>gfs_graphcast025</code></td><td>GraphCast, GFS-initialized</td><td>Machine-learning</td></tr>
+          <tr><td><code>ecmwf_aifs025_single</code></td><td>ECMWF AIFS, single</td><td>Machine-learning</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="era5-reference">The reference: ERA5 via the Archive API</h2>
+      <p>
+        <code>https://archive-api.open-meteo.com/v1/archive</code> serves the ERA5 reanalysis:
+        global, 0.25°, hourly, from 1940 to a few days ago. Two facts about it shape the whole
+        exercise:
+      </p>
+      <ul>
+        <li>
+          <strong>It runs about six days behind the present.</strong> On 2026-09-29, the latest
+          ERA5 hour available was 2026-09-23 23:00 UTC. The lag belongs to the reference, not the
+          forecast models, and it is the one hard constraint on your window: the exercise's
+          default ends at least eight days back, which leaves a margin. Live dates fetch
+          forecasts; they cannot yet verify them.
+        </li>
+        <li>
+          <strong>It is a reanalysis, not observations.</strong> ERA5 is a model-data blend with
+          error characteristics of its own: for some variables, in some terrain, appreciable
+          ones. Every statistic in this exercise is an error relative to ERA5, and the prompts and
+          pages here say "reference," never "truth," because the difference is real.
+        </li>
+      </ul>
+
+      <h2 id="response-anatomy">Anatomy of a response</h2>
+      <ul>
+        <li>
+          Hourly data arrives as <strong>parallel arrays</strong>: one <code>time</code> array,
+          and one value array per variable/lead, index-aligned. Gaps are <code>null</code> entries
+          <em>inside</em> the arrays; array lengths stay equal.
+        </li>
+        <li>
+          A <code>hourly_units</code> object accompanies the data, naming the unit of every
+          series. Record it; task 2's unit assertions are fed from it.
+        </li>
+        <li>
+          Times are ISO 8601 without a zone suffix, interpreted in the requested
+          <code>timezone</code>. The API defaults to GMT; the exercise requests
+          <code>timezone=GMT</code> explicitly so the intent is on the record. (The task-1
+          episode note describes what omitting this parameter cost the original build.)
+        </li>
+        <li>
+          Default units are metric: <strong>°C, km/h, mm</strong>. The exercise fetches at
+          defaults and converts to report units (°F, mph, inches) once, at the reporting
+          boundary, so the conversion exists as code that can carry assertions rather than as a
+          query parameter.
+        </li>
+      </ul>
+
+      <h2 id="verified-behaviors">Verified behaviors</h2>
+      <p>
+        Three behaviors confirmed against the live API while this page was drafted, each with the
+        date it was checked. Any of them may change; the date is part of the fact.
+      </p>
+      <ol>
+        <li>
+          <strong>A model can return nothing at all, and the response still looks
+          normal.</strong> On 2026-09-29, <code>gfs_graphcast025</code> returned all-null arrays
+          for every variable at every lead, in every window tried back to June 2026, with a
+          perfectly ordinary <code>hourly_units</code> entry attached; the same request against
+          <code>ecmwf_aifs025_single</code> returned complete series. (On 2026-09-14 the pattern
+          was different: the machine-learning models' wind series came back empty.) A series with
+          no values produces no matched pairs, so its statistics are unavailable. Record that; do
+          not let an agent fill the series or drop it silently.
+        </li>
+        <li>
+          <strong><code>bounding_box</code> is not supported for every model</strong>
+          (2026-09-14). A box
+          request with <code>models=gfs_global</code> returns an error
+          (<code>"Bounding box calls not supported for domain gfs_global"</code>); the same
+          request against <code>ecmwf_ifs025</code> succeeds.
+        </li>
+        <li>
+          <strong>A bounding-box response is an array of per-gridpoint objects, and nothing in
+          any object names the model that produced it.</strong> Each element carries its own
+          latitude and longitude; attribution to a model exists only in your request. If you fetch
+          a box for several models, your bookkeeping is the only thing connecting responses to
+          models. State that in your plan and assert it in your code.
+        </li>
+      </ol>
+      <p>
+        If you want a box rather than a point, the practical shape on 2026-09-14:
+        <code>bounding_box=39,-106,41,-104</code> (south, west, north, east); either drop
+        <code>gfs_global</code> or fetch it per-point. A single point sidesteps all three
+        behaviors, and the exercise loses nothing.
+      </p>
+
+      <h2 id="good-citizen">Being a good citizen</h2>
+      <p>
+        Open-Meteo's free tier is for non-commercial use with attribution, and the exercise's
+        fetches are small: a handful of requests, once, with the raw responses saved and reused.
+        An agent re-fetching on every run instead of reading its saved files deserves a note in
+        your review, and is the usual way rate limits get hit.
+      </p>
+
+      <p>
+        Back to <a href={`${base}reference-workflow/task-1/`}>task 1</a>, or on to the
+        <a href={`${base}reference-workflow/statistics/`}>statistics appendix</a>.
+      </p>
+    </article>
+</RwLayout>

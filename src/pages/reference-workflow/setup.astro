@@ -1,0 +1,79 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+import PromptBox from '../../components/PromptBox.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const pSetup = `Set up this project's instruction file, AGENTS.md (the file of standing, project-level instructions that coding agents load alongside your prompts). Create it if it does not exist, and add the content between the triple quotes:
+
+"""
+This repository scores recent weather forecasts against the ERA5 reanalysis.
+
+Conventions:
+- All internal computation in the API's native units (°C, km/h, mm). Report tables and figures in °F, mph, and inches. Convert once, at the reporting boundary, never mid-pipeline.
+- All times UTC (timezone=GMT at fetch). A displayed time states its zone.
+- Raw API responses under data/raw/ are read-only once hashed into PROVENANCE.md. Every claim about what the data says must be checkable against them.
+- A null in a response is an explicitly missing value in our records: never zero, never a silently dropped row.
+
+Gates. Stop and ask before:
+- deleting or rewriting anything under data/raw/,
+- changing a statistic's definition or a tolerance,
+- declaring any task complete.
+"""`;
+---
+
+<RwLayout
+  title="Setup — Reference Workflow"
+  description="Pick a coding agent and give the project its instruction file with the setup prompt. Model and reasoning-effort settings are optional."
+  current="setup"
+>
+    <h1 class="text-3xl font-bold text-gray-900">Set up your agent</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      Pick a coding agent and paste one prompt.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        You need a coding agent: a tool that works directly in a project, designing, writing, and
+        running its code, rather than a general-purpose chat window. Claude Code, Codex, Gemini
+        CLI, and Cursor are common examples, and most others should work as well. The exercise
+        relies on nothing unique to any of them, whether they run in a terminal, an editor, or a
+        cloud workspace. If your agent runs from the command line, the only preparation is a new,
+        empty directory for the project. The agent installs what the project needs as it goes,
+        asking your permission first if your tool is set up that way.
+      </p>
+      <p>
+        Many tools can also run the agent's commands in a sandbox that limits what they can reach
+        outside the project. If yours offers one, it's worth turning on. Two examples at the time
+        of writing:
+      </p>
+      <ul>
+        <li>Claude Code: the <code>/sandbox</code> command, inside a running session.</li>
+        <li>
+          Codex: the <code>--sandbox</code> option when you start a session, as in
+          <code>codex --sandbox workspace-write</code>.
+        </li>
+      </ul>
+      <p>
+        Two settings live in your tool rather than in any prompt — which model runs, and how much
+        reasoning effort it spends — and the defaults work fine. More capable models and higher
+        effort generally cost more and take longer per task. If you want a feel for how models
+        compare, running this exercise multiple times using different models is a good way to get
+        one. In Claude Code these are the
+        <code>/model</code> and <code>/effort</code> commands, and Codex and Gemini CLI have the
+        same two choices under their own names.
+      </p>
+      <p>
+        The only setup is the project's instruction file, the cheapest structural safeguard there
+        is (<a href={`${base}framework/structure/`}>the structure chapter</a> explains why). Paste
+        this prompt first:
+      </p>
+
+      <PromptBox label="Setup prompt — the project file" text={pSetup} />
+
+      <p>
+        The Community Repository carries a fuller worked example of agent configuration.
+        <em>(Links land with the Community Repository launch.)</em>
+      </p>
+    </article>
+</RwLayout>

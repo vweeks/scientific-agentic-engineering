@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Weeks
     given-names: Victor
-    orcid: "https://orcid.org/0000-0003-0159-4556"
+    orcid: "https://orcid.org/0009-0004-9935-1042"
     affiliation: "NSF National Center for Atmospheric Research (NSF NCAR)"
 repository-code: "https://github.com/vweeks/scientific-agentic-engineering"
 url: "https://vweeks.github.io/scientific-agentic-engineering/"
@@ -21,3 +21,14 @@ keywords:
   - BSSw Fellowship
 license-url: "https://github.com/vweeks/scientific-agentic-engineering/blob/main/LICENSE-CODE"
 date-released: "2026-04-08"
+preferred-citation:
+  type: software
+  title: "Scientific Agentic Engineering"
+  authors:
+    - family-names: Weeks
+      given-names: Victor
+      orcid: "https://orcid.org/0009-0004-9935-1042"
+      affiliation: "NSF National Center for Atmospheric Research (NSF NCAR)"
+  doi: "10.5281/zenodo.22715841"
+  year: 2026
+  url: "https://vweeks.github.io/scientific-agentic-engineering/"

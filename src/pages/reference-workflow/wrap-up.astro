@@ -1,0 +1,38 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<RwLayout
+  title="What you keep — Reference Workflow"
+  description="The decision trail the exercise leaves behind, and where the fellowship builds on it next."
+  current="wrap-up"
+>
+    <h1 class="text-3xl font-bold text-gray-900">What you keep</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      The exercise ends; the decision trail is the part that carries over.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        What you keep at the end is the decision trail: plans, provenance, checks that have been
+        shown to fail, an adversarial review with findings, and a claim whose boundary is stated
+        honestly. That trail is what the framework means by
+        <a href={`${base}framework/patterns/#keep-the-decision-trail`}>keeping the record</a>, and
+        it is the part of the exercise that carries over to your own projects. It is also enough
+        for a colleague to reconstruct the work: the provenance record names the exact requests
+        and the hashes of what they returned, so the package can be re-fetched, re-checked, and
+        re-run without you in the room.
+      </p>
+      <p>
+        The reasoning behind the moves the prompts made lives in
+        <a href={`${base}framework/the-loop/`}>the framework's workflow chapter</a> and the
+        <a href={`${base}framework/patterns/`}>pattern catalog</a> it draws on.
+      </p>
+      <p>
+        The fellowship's <a href={`${base}tutorials/`}>tutorial series</a> complements the
+        Reference Workflow.
+      </p>
+    </article>
+</RwLayout>

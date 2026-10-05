@@ -1,0 +1,88 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const sections = [
+  { slug: 'what-you-will-build', text: 'What you will build' },
+  { slug: 'why-it-looks-the-way-it-does', text: 'Why it looks the way it does' },
+  { slug: 'how-the-pages-are-organized', text: 'How the pages are organized' },
+];
+---
+
+<RwLayout
+  title="Reference Workflow — Scientific Agentic Engineering"
+  description="A hands-on exercise in building scientific software with a coding agent, and in checking what it builds."
+  current="overview"
+  sections={sections}
+>
+    <h1 class="text-3xl font-bold text-gray-900">The Reference Workflow</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      A hands-on exercise in building scientific software with a coding agent — and in checking
+      what it builds.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <h2 id="what-you-will-build">What you will build</h2>
+      <p>
+        A small forecast-verification application. It scores a week of recent forecasts from four
+        weather models against the ERA5 reanalysis: it computes each model's error statistics by
+        forecast lead and draws the comparison figures. The data is fetched once, at the start,
+        and saved along with a record of where it came from.
+      </p>
+      <p>
+        The exercise follows <a href={`${base}framework/the-loop/`}>the framework's workflow</a>.
+        If you haven't read that chapter yet, it's worth reading first, since it explains why each
+        step below is there. After a short setup, you work through four tasks in order: ingest,
+        compute, visualize, and evaluate. Each task is one prompt to your coding agent, and each
+        builds on the plan and files created by earlier tasks. The prompts are written for one
+        continuous session, but those files are what carry the work forward, so a project you
+        resume in a new session works just as well. In the three building tasks, the agent runs
+        the workflow's stages: it writes a plan, renders it as a page you can open in your browser, and waits for your approval before
+        implementing. Then it verifies its own work and waits for your review. The fourth task
+        builds nothing new: the finished work goes to a fresh agent that had no part in building
+        it (one your agent launches, or one you start yourself in a separate session), and the
+        findings come back to you.
+      </p>
+      <p>
+        The exercise practices one skill from end to end: working with an agent in a way that
+        prevents or surfaces the
+        <a href={`${base}framework/failure-modes/`}>documented failure modes</a> of AI-assisted
+        scientific software, through to judging the fresh agent's findings yourself.
+      </p>
+
+      <h2 id="why-it-looks-the-way-it-does">Why it looks the way it does</h2>
+      <p>
+        The exercise is drawn from a real development episode: a forecast-comparison dashboard
+        built with a coding agent in 2025, against the same data sources you are about to use. The
+        failures that mattered in that episode were the quiet ones. A crash gets caught in the
+        normal course of work; the runs that completed, rendered, and were wrong did not. Each
+        task's page carries an episode note marking where that happened.
+      </p>
+      <p>
+        The prompts behind those failures were ordinary feature requests, and today's coding
+        agents might not make the same mistakes from them. The prompts here don't count on that.
+        Each one names the checks that catch this kind of failure — unit conversions, time
+        semantics, data wired to the wrong series — and has the agent show you its evidence, so a
+        clean build is something you confirm rather than assume. What matters is understanding
+        what each check guards against and why. Checks like these can also be packaged as skills
+        that run them automatically, and that understanding is what lets you judge such a skill,
+        or write one of your own.
+      </p>
+      <p>
+        Each prompt states goals, constraints, and stopping points rather than step-by-step
+        instructions, because that is the shape current frontier models work best from. Inside each one,
+        the sections are marked with XML-style tags such as <code>&lt;goal&gt;</code> and
+        <code>&lt;verify&gt;</code>, a structure agents parse reliably. You paste every prompt
+        as it is. Where a choice is yours, such as the location to verify, the agent asks you.
+      </p>
+
+      <h2 id="how-the-pages-are-organized">How the pages are organized</h2>
+      <p>
+        Work through the chapters in order: setup, one chapter per task, and a short wrap-up on
+        what you keep. Three appendices are there for reference as you go. The data primer covers
+        what the APIs actually return, the visual checklist is the rubric for judging the figures,
+        and the statistics page defines what gets computed. Each task links to the ones it uses.
+      </p>
+    </article>
+</RwLayout>

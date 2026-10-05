@@ -1,0 +1,85 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+import PromptBox from '../../components/PromptBox.astro';
+import EpisodeNote from '../../components/EpisodeNote.astro';
+
+const base = import.meta.env.BASE_URL;
+const checklistUrl = `${import.meta.env.SITE}${base}reference-workflow/visual-checklist/`;
+
+const p3 = `Next task: figures.
+
+<goal>
+Two figure sets. (1) Error by lead: for each variable, one chart with a line per model, RMSE on the y-axis in the report units and forecast lead on the x-axis. (2) A wind comparison at one lead: two wind roses side by side, one drawn from the era5 reference series and one drawn from one model's forecast series, with the speed/direction pairing stated.
+</goal>
+
+<plan>
+Before any code, answer for each figure: what question does it answer; which exact data series, by name from our records, feeds each panel; and what would a reader wrongly conclude if an axis, a unit, or a series were wrong? Append the answers to PLAN.md, rebuild plan.html from it, present the page, and wait for my approval.
+</plan>
+
+<implement>
+Every axis and legend carries units. Legend entries are display names, never internal key names. Axis ranges include the full data without truncation. Displayed times are in UTC and say so. After rendering, print next to each figure the name of every data series each panel actually read.
+</implement>
+
+<verify>
+1. Go through the visual checklist at ${checklistUrl} item by item for each figure and report the result per item; if you cannot fetch web pages, ask me to paste the list in. Then look past the list: report anything else wrong with the figures that the checklist does not name.
+2. Hand-check three plotted values against the task-2 tables, at least one from each figure set, including one from the wind roses.
+3. For the wind roses: show me which series each panel read, captured at plot time rather than read off the labels.
+
+Then wait for my review.
+</verify>`;
+---
+
+<RwLayout
+  title="Task 3: Visualize — Reference Workflow"
+  description="The error curves and a wind-rose comparison, verified against the visual checklist and hand-checked values."
+  current="task-3"
+>
+    <h1 class="text-3xl font-bold text-gray-900">Task 3: Visualize</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      The error curves and a wind-rose comparison, checked item by item.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        This task draws two sets of figures: the error curves by lead, and a reference wind rose
+        beside a forecast wind rose. A panel's label says what it is meant to show, not what it
+        actually read, so the prompt keeps asking which data series each panel read. The episode
+        note below shows why.
+      </p>
+      <p>
+        To verify the figures, the prompt points the agent at the
+        <a href={`${base}reference-workflow/visual-checklist/`}>visual checklist</a>, a rubric of
+        yes-or-no checks, and has it report on every item. Reading the list only takes fetching
+        a web page, not driving a browser; if your agent can't, it will ask you to paste the list
+        in.
+      </p>
+
+      <PromptBox label="Prompt 3 — visualize: frame the figures, build, verify" text={p3} />
+
+      <p><strong>While it runs, watch for two things.</strong></p>
+      <ul>
+        <li>
+          Treat an empty panel as a finding. The same goes for a metric that prints
+          <code>--</code> or <code>NaN</code>, and for a warning that only appears in a console.
+        </li>
+        <li>
+          Wind direction is circular in the figures too. A wind rose's north sector has to
+          collect winds from both sides of 0°: a 355° wind and a 5° wind belong in the same
+          sector.
+        </li>
+      </ul>
+
+      <EpisodeNote>
+        <p>
+          This is the failure the exercise was built around. In the original dashboard, the
+          validation panel labeled <em>Observed</em> was wired to a forecast series. The observed
+          wind rose rendered blank; the only symptom was a warning in the browser console. The
+          forecast rose beside it drew a normal-looking pattern, and the verification beneath
+          compared the forecast against itself. It looked like missing data rather than
+          mis-wiring, and it stayed that way until a human traced which series each panel actually
+          read. The verification step in prompt 3 asks for that trace while the work is still
+          open.
+        </p>
+      </EpisodeNote>
+    </article>
+</RwLayout>

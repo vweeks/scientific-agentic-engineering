@@ -1,0 +1,149 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const sections = [
+  { slug: 'matched-pairs', text: 'Matched pairs' },
+  { slug: 'error-statistics', text: 'The three error statistics' },
+  { slug: 'counts-first', text: 'Counts first' },
+  { slug: 'wind-direction', text: 'Wind direction is circular' },
+  { slug: 'tolerances', text: 'Justifying a tolerance' },
+  { slug: 'limits', text: 'What the statistics do not say' },
+];
+---
+
+<RwLayout
+  title="Statistics — Reference Workflow"
+  description="Definitions for the exercise's error statistics, the counts-first aggregation rule with a worked example, circular handling for wind direction, and how to justify a tolerance."
+  current="statistics"
+  sections={sections}
+>
+    <h1 class="text-3xl font-bold text-gray-900">Statistics</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      The definitions behind the numbers, for reference as you review the agent's work.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        This page is for you. The task-2 prompt carries its own instructions for the agent; the
+        definitions here are for you to consult as you review its results.
+      </p>
+
+      <h2 id="matched-pairs">Matched pairs</h2>
+      <p>
+        Everything starts from the <strong>matched pair</strong>: a forecast value
+        <code>f</code> and a reference value <code>o</code> for the same variable, the same
+        location, and the same valid hour, at a stated lead. A pair exists only when both values
+        are present; a <code>null</code> on either side removes the pair from the counts, and the
+        counts are reported, not hidden. Comparing series with different missing patterns without
+        tracking pair counts is how a statistic quietly changes its sample from one lead to the
+        next.
+      </p>
+
+      <h2 id="error-statistics">The three error statistics</h2>
+      <p>Over the <code>n</code> matched pairs of one model, variable, and lead:</p>
+      <ul>
+        <li>
+          <strong>Mean error (bias):</strong> <code>ME = (1/n) Σ (f − o)</code>. Signed: warm and
+          cold errors cancel. A near-zero ME with a large RMSE means large compensating errors.
+        </li>
+        <li>
+          <strong>Mean absolute error:</strong> <code>MAE = (1/n) Σ |f − o|</code>. Typical error
+          magnitude, robust to a few large misses.
+        </li>
+        <li>
+          <strong>Root-mean-square error:</strong> <code>RMSE = sqrt((1/n) Σ (f − o)²)</code>.
+          Punishes large errors; always ≥ MAE, and the gap between them says how heavy the error
+          tail is.
+        </li>
+      </ul>
+      <p>
+        All three carry the units of the variable; report them with it.
+      </p>
+
+      <h2 id="counts-first">Counts first — the aggregation rule</h2>
+      <p>
+        To aggregate across days, gridpoints, or files: <strong>pool the pairs: carry the counts
+        and partial sums, and form the statistic once, at the end.</strong> Never average
+        already-formed per-day or per-file statistics; that weights every subset equally no matter
+        how many pairs it contains, and it silently changes the quantity being reported.
+      </p>
+      <p>A worked miniature. Day one: 4 pairs, each with error 1.0. Day two: 1 pair, error 6.0.</p>
+      <ul>
+        <li>
+          Counts first: <code>MAE = (4×1.0 + 1×6.0) / 5 = 2.0</code>.
+        </li>
+        <li>
+          Average of daily MAEs: <code>(1.0 + 6.0) / 2 = 3.5</code>.
+        </li>
+      </ul>
+      <p>
+        Both numbers can be computed and printed; only the first is the MAE of the five pairs. The gap grows with imbalance; in a sibling
+        project of the original episode it moved a skill score by roughly thirteen percent on
+        real data. Ratio-based scores are even less
+        forgiving: sum numerators and denominators separately, then divide once.
+      </p>
+
+      <h2 id="wind-direction">Wind direction is circular</h2>
+      <p>
+        Direction lives on a circle, and degrees are not a number line: the difference between
+        350° and 10° is 20°, not 340°. The signed error for a pair is <code>f − o</code> wrapped
+        into the range −180° to 180° (350° against 10° gives −20°); ME, MAE, and RMSE then apply
+        to that wrapped difference, and its magnitude is the angular error
+        <code>Δ = min(|f − o|, 360 − |f − o|)</code>. Means of directions need vector
+        averaging (average the sine and cosine components, then take the arctangent): the
+        arithmetic mean of 350° and 10° is 180°, which points the opposite way.
+      </p>
+      <p>
+        A statistic computed linearly on direction values will run without complaint and return a
+        number. Treat any direction statistic in your pipeline, or a plausible-looking direction
+        correlation in a verification panel, as unverified until the circular handling has been
+        demonstrated.
+      </p>
+
+      <h2 id="tolerances">Justifying a tolerance</h2>
+      <p>
+        The exercise repeatedly asks for comparisons "within a tolerance you justify." Justified
+        means you can say what the tolerance is made of:
+      </p>
+      <ul>
+        <li>
+          Two routes to the same statistic from the same floating-point inputs should agree to
+          near machine precision: relative error around <code>1e-12</code> or tighter for these
+          sample sizes. A tolerance of <code>0.1</code> on such a comparison is a check that cannot
+          fail.
+        </li>
+        <li>
+          A recomputation from <em>rounded or stored intermediates</em> inherits the rounding: the
+          justified tolerance follows from the number of digits kept, and any excess disagreement
+          beyond that is signal; this is precisely the precision-loss failure task 4 hunts.
+        </li>
+        <li>
+          When a tolerance must absorb real variation (regridding, resampled time bases), write
+          down which effect contributes what. "It passed with this value" describes a tolerance
+          without justifying it.
+        </li>
+      </ul>
+      <p>
+        The pattern to hold on to: a tolerance is part of the claim. Widening it to make a check
+        pass is narrowing the claim; say so in the record when you do it.
+      </p>
+
+      <h2 id="limits">What the statistics do not say</h2>
+      <p>
+        The reference is the ERA5 reanalysis, so every number here is an error relative to ERA5:
+        a well-characterized standard, and still a model-data blend with error of its own. Ranking
+        models by these statistics ranks their agreement with ERA5 at your location and window;
+        over a single week it says little that is stable about the models in general. The
+        exercise's subject is the trustworthiness of the pipeline, not a leaderboard of forecast
+        systems.
+      </p>
+
+      <p>
+        Back to <a href={`${base}reference-workflow/task-2/`}>task 2</a>, or the
+        <a href={`${base}reference-workflow/data-primer/`}>data primer</a> for where these numbers
+        come from.
+      </p>
+    </article>
+</RwLayout>

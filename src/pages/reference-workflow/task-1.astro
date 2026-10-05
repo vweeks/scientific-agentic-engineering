@@ -1,0 +1,110 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+import PromptBox from '../../components/PromptBox.astro';
+import EpisodeNote from '../../components/EpisodeNote.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const p1 = `I'm starting a small forecast-verification project. This prompt covers the whole first task (plan, fetch, tidy, verify) with stops for my review built in.
+
+<goal>
+Fetch recent forecasts and a reanalysis reference for one location, record their provenance, and organize them into tidy records.
+</goal>
+
+<inputs>
+Two choices are mine, so before you plan, ask me for both and offer the defaults: the location (any city in the continental US; default Boulder, Colorado) and the 7-day window to verify (default: the most recent 7-day window that ends at least 8 days before today; the era5 reference runs about six days behind the present, so a window it does not yet cover cannot be verified). Resolve the chosen city to a single latitude/longitude point yourself, and state the coordinates and the dates in your plan.
+</inputs>
+
+<data>
+The Open-Meteo Previous Runs API for forecasts from the models gfs_global, ecmwf_ifs025, gfs_graphcast025, and ecmwf_aifs025_single, at leads previous_day0 through previous_day3; and the Open-Meteo Archive API for the era5 reanalysis as the reference. Hourly variables: temperature_2m, wind_speed_10m, wind_direction_10m, precipitation. Request timezone=GMT and keep the API's default units.
+</data>
+
+<plan>
+Before writing any code, work out a plan stating: the exact request URLs you intend to call; what previous_dayN means for a single valid hour; which response fields you will keep; how you will represent missing values; and what files you will write. List every assumption you are making about the response format, marked as unverified. Write the finalized plan to PLAN.md, then render PLAN.md to plan.html (a standalone page I can open in any browser) and present that page to me. Wait for my approval or changes before continuing.
+</plan>
+
+<implement>
+Once the plan is approved: fetch exactly as planned, saving each raw response unmodified under data/raw/. Create PROVENANCE.md recording, for every request: the full request URL, the UTC time of the fetch, the SHA-256 hash of the saved response file, and the hourly_units object the response reported. From here on the raw response files are read-only; everything downstream must be reproducible from them.
+
+Then parse the saved responses into tidy records: one row per model, variable, valid time, and lead, with the reference stored as its own series. Valid times stay in UTC exactly as the API returned them. A null in a response array becomes an explicitly missing value in the records, never a zero and never a dropped row. Every record carries its units, taken from the recorded hourly_units, not typed by hand.
+</implement>
+
+<verify>
+Before calling the task done:
+1. Spec versus reality: verify each assumption from your plan against the actual saved files, quoting the evidence. Documentation and field names are claims, not facts.
+2. Per-record completeness: write a check that would fail if a field inside a retained record were silently dropped, mistyped, or unit-mislabeled, not just a row count. Corrupt a copy of one response deliberately and show me the check failing on it, then passing on the real data.
+3. Alignment: for one valid hour of one model, show me the raw values at each lead side by side with the corresponding records, and state in words what previous_day2 means for that hour.
+
+Report the verification results along with: records per model and per lead, the fraction of missing values per series, and any series whose missing fraction stands out from its neighbors. Then wait for my review.
+</verify>`;
+---
+
+<RwLayout
+  title="Task 1: Ingest — Reference Workflow"
+  description="Plan, fetch, and tidy the forecast and reference data, with provenance recorded and every assumption verified against the saved responses."
+  current="task-1"
+>
+    <h1 class="text-3xl font-bold text-gray-900">Task 1: Ingest</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      Plan, fetch, record provenance, and tidy the data.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        In this task the agent fetches the data, saves every response untouched, and writes down
+        where each one came from in a file called PROVENANCE.md: the request URL, the time of the
+        fetch, and a hash of the saved file. Every later check points back at that record. Then it
+        tidies the responses into the records the rest of the application computes from. Before
+        planning, the agent asks you for a location and a date window; the default location is
+        Boulder, Colorado, where the original episode ran.
+      </p>
+      <p>
+        For background on what these APIs return — the <code>previous_dayN</code> lead
+        semantics, the units object, and a few verified quirks — see the
+        <a href={`${base}reference-workflow/data-primer/`}>data primer</a>. It's optional
+        reading: as the prompt directs, the agent verifies those details against the saved
+        responses and shows you the evidence.
+      </p>
+
+      <PromptBox label="Prompt 1 — ingest: plan, fetch, record, verify" text={p1} />
+
+      <p><strong>While it runs, watch for three things.</strong></p>
+      <ul>
+        <li>
+          The plan should treat <code>previous_dayN</code> as something to state and verify, not
+          something it already knows. If the plan asserts the semantics without flagging the
+          assumption, ask where that knowledge came from.
+        </li>
+        <li>
+          Watch that raw responses are saved <em>before</em> anything derives from them, and that
+          the hashes in PROVENANCE.md are of the files as fetched.
+        </li>
+        <li>
+          Read the missing-value fractions the prompt asks for at the end, and ask for them if
+          they're missing. Some model/variable combinations come back entirely empty (the primer
+          names one verified case). An agent that quietly drops an empty series, or fills it with
+          zeros, has just repeated the failure in the note below.
+        </li>
+      </ul>
+
+      <EpisodeNote>
+        <p>
+          Ingest produced two silent failures in one afternoon of the original build. The fetch
+          omitted the timezone parameter, so every timestamp displayed downstream sat against the
+          wrong wall-clock hour: the data was fine, and every label on it was wrong. And the loop
+          that assembled per-lead series names built a suffix pattern the API never used: four of
+          the six series came back with no data at all. Nothing crashed. The chart rendered, the
+          legend quietly showed raw internal key names, and the two series that did draw looked
+          fine.
+        </p>
+        <p>
+          In a sibling project against the same family of APIs, a coordinate pair passed in the
+          wrong order fetched a different place entirely. Nothing in the numbers gave it away:
+          plausible weather for the wrong location looks exactly like plausible weather for the
+          right one. The application would have claimed its data was for one place while
+          analyzing another, the kind of subtle error that leaves research factually wrong with
+          nothing visibly broken.
+        </p>
+      </EpisodeNote>
+    </article>
+</RwLayout>

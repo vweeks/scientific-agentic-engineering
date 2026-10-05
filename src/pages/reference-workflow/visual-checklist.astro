@@ -1,0 +1,102 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+
+// Rendered as a static checklist. It works as a rubric for the figures, but
+// nobody is scored against it; the intro below says so.
+const groups = [
+  {
+    slug: 'wiring',
+    title: 'Wiring — which data is this, actually?',
+    items: [
+      'For each panel, name the exact data series it reads. Use the code or a printed binding at plot time, not the panel’s title.',
+      'Compare that name against what the label claims. “Observed” wired to a forecast series is the founding failure of this exercise.',
+      'Treat an empty panel as a failure to investigate, never as “no data.” Something asked for a series; find out what it asked for.',
+      'Read the console or log output while the figures render. A warning nobody sees is the only symptom some failures produce.',
+    ],
+  },
+  {
+    slug: 'units-and-labels',
+    title: 'Units and labels',
+    items: [
+      'Every axis and every legend entry carries a unit.',
+      'The unit on the label matches the unit of the data plotted: a label can say °F over °C values and nothing will crash.',
+      'Legend entries are display names. Raw internal key names leaking into a legend means the plot is drawing series nobody chose.',
+      'The time axis is in UTC and says so. Sanity-check the hours against the location: in Colorado, the afternoon temperature peak lands around 21:00–23:00 UTC. A peak at the wrong hour usually means a timezone error.',
+    ],
+  },
+  {
+    slug: 'axes-ranges-scale',
+    title: 'Axes, ranges, and scale',
+    items: [
+      'Axis ranges include the full data without truncating it: a clipped axis quietly deletes the extremes.',
+      'Panels meant to be compared share axis ranges; on different scales, the comparison itself misleads.',
+      'If a colormap encodes an ordered quantity, it is monotone: no rainbow re-ordering of magnitude.',
+    ],
+  },
+  {
+    slug: 'values',
+    title: 'Values — the figure against the table',
+    items: [
+      'Check at least three plotted values against the computed tables, at least one from each figure set.',
+      'A metric printing “--”, NaN, or nothing is a finding. In the original episode, the dashes under the wind roses were the only visible sign that the verification had never actually run.',
+      'Be suspicious of perfection. A correlation of 1.0 in a verification panel usually means something was compared against itself.',
+    ],
+  },
+];
+
+const sections = [
+  { slug: 'wiring', text: 'Wiring' },
+  { slug: 'units-and-labels', text: 'Units and labels' },
+  { slug: 'axes-ranges-scale', text: 'Axes, ranges, and scale' },
+  { slug: 'values', text: 'Values' },
+];
+---
+
+<RwLayout
+  title="Visual checklist — Reference Workflow"
+  description="The figure-verification rubric for task 3: wiring, units, axes, and values, each item phrased so it can actually fail."
+  current="visual-checklist"
+  sections={sections}
+>
+    <h1 class="text-3xl font-bold text-gray-900">Visual checklist</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      A figure is a claim about the data. This list is where checking the claim starts.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        The verification step of the task-3 prompt has your agent walk this list and report on
+        every item. It works like a rubric: each item has a yes-or-no answer backed by evidence,
+        because a check that cannot fail checks nothing. Nobody scores you against it.
+        The list is a floor, not a ceiling: it names the checks the original episode earned, the
+        prompt also has the agent look for problems the list does not name, and passing every
+        item does not make a figure correct.
+      </p>
+    </article>
+
+    <div class="mt-8 space-y-8">
+      {groups.map(group => (
+        <section>
+          <h2 id={group.slug} class="text-xl font-semibold text-gray-900">{group.title}</h2>
+          <ul class="mt-3 space-y-2">
+            {group.items.map(item => (
+              <li class="flex gap-3 rounded-lg border border-gray-200 bg-gray-50/60 px-4 py-3">
+                <span class="mt-0.5 select-none text-gray-400" aria-hidden="true">☐</span>
+                <span class="text-[15px] leading-relaxed text-gray-700">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+
+    <article class="prose prose-gray max-w-none mt-10">
+      <p>
+        Back to <a href={`${base}reference-workflow/task-3/`}>task 3</a>, or the
+        <a href={`${base}reference-workflow/statistics/`}>statistics appendix</a> for what the
+        plotted quantities mean.
+      </p>
+    </article>
+</RwLayout>

@@ -1,0 +1,46 @@
+---
+// A copyable prompt: the participant pastes these into their own coding
+// agent. Text arrives as a prop (not a slot) so indentation in the page
+// source never leaks into what gets copied.
+interface Props {
+  label: string;
+  text: string;
+}
+const { label, text } = Astro.props;
+---
+
+<figure class="not-prose my-6 overflow-hidden rounded-lg border border-blue-200 bg-blue-50/40" data-prompt-box>
+  <figcaption class="flex items-center justify-between gap-3 border-b border-blue-100 bg-blue-50/70 px-4 py-2">
+    <span class="text-xs font-semibold uppercase tracking-wide text-blue-800">{label}</span>
+    <button
+      type="button"
+      data-copy
+      class="rounded border border-blue-200 bg-white px-2 py-0.5 text-xs font-medium text-blue-700 hover:border-blue-400 hover:text-blue-900"
+    >Copy</button>
+  </figcaption>
+  <pre class="m-0 whitespace-pre-wrap bg-transparent px-4 py-3 font-mono text-[13px] leading-relaxed text-gray-800">{text}</pre>
+</figure>
+
+<script>
+  document.addEventListener('click', async e => {
+    const btn = (e.target as HTMLElement).closest('[data-copy]');
+    if (!btn) return;
+    const pre = btn.closest('[data-prompt-box]')?.querySelector('pre');
+    if (!pre) return;
+    try {
+      await navigator.clipboard.writeText(pre.textContent ?? '');
+      btn.textContent = 'Copied';
+      setTimeout(() => (btn.textContent = 'Copy'), 1400);
+    } catch {
+      // Clipboard can be unavailable (permissions, insecure context):
+      // select the text so a manual ⌘C still works.
+      const range = document.createRange();
+      range.selectNodeContents(pre);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      btn.textContent = 'Press ⌘C';
+      setTimeout(() => (btn.textContent = 'Copy'), 2000);
+    }
+  });
+</script>
