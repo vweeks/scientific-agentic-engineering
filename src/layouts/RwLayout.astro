@@ -1,0 +1,106 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import RwNav from '../components/RwNav.astro';
+
+interface Section { slug: string; text: string; }
+interface Props {
+  title: string;
+  description: string;
+  current: string;
+  sections?: Section[];
+}
+
+const { title, description, current, sections = [] } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+// The ordered chapter list drives the sidebar, the mobile disclosure, and the
+// prev/next cards. The appendix pages sit outside the sequence: they appear
+// in their own sidebar group and get no prev/next.
+const chapters = [
+  { id: 'overview', href: `${base}reference-workflow/`, title: 'Overview' },
+  { id: 'setup', href: `${base}reference-workflow/setup/`, title: 'Set up your agent' },
+  { id: 'task-1', href: `${base}reference-workflow/task-1/`, title: 'Task 1: Ingest' },
+  { id: 'task-2', href: `${base}reference-workflow/task-2/`, title: 'Task 2: Compute' },
+  { id: 'task-3', href: `${base}reference-workflow/task-3/`, title: 'Task 3: Visualize' },
+  { id: 'task-4', href: `${base}reference-workflow/task-4/`, title: 'Task 4: Evaluate' },
+  { id: 'wrap-up', href: `${base}reference-workflow/wrap-up/`, title: 'What you keep' },
+];
+const appendices = [
+  { id: 'data-primer', href: `${base}reference-workflow/data-primer/`, title: 'Data primer' },
+  { id: 'visual-checklist', href: `${base}reference-workflow/visual-checklist/`, title: 'Visual checklist' },
+  { id: 'statistics', href: `${base}reference-workflow/statistics/`, title: 'Statistics' },
+];
+
+const total = chapters.length;
+const idx = chapters.findIndex((c) => c.id === current);
+const prev = idx > 0 ? chapters[idx - 1] : null;
+const next = idx >= 0 && idx < total - 1 ? chapters[idx + 1] : null;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:flex lg:gap-10">
+    <!-- Desktop sidebar: chapter navigation + current page's sections -->
+    <aside class="hidden lg:block lg:w-52 lg:flex-none">
+      <div class="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto pb-6 pr-1">
+        <a
+          href={`${base}reference-workflow/`}
+          class="block text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 transition-colors mb-3"
+        >
+          Reference Workflow
+        </a>
+        <RwNav chapters={chapters} appendices={appendices} current={current} sections={sections} />
+      </div>
+    </aside>
+
+    <!-- Content column -->
+    <div class="min-w-0 lg:flex-1">
+      <div class="max-w-3xl mx-auto lg:mx-0">
+        <!-- Mobile disclosure: same navigation, collapsed by default -->
+        <details class="lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50/70">
+          <summary class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-700 marker:text-gray-400">
+            Contents{idx >= 0 ? ` · ${idx + 1} of ${total}` : ''}
+          </summary>
+          <div class="border-t border-gray-200 px-4 py-3">
+            <a
+              href={`${base}reference-workflow/`}
+              class="block text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gray-600 mb-2"
+            >
+              Reference Workflow
+            </a>
+            <RwNav chapters={chapters} appendices={appendices} current={current} sections={sections} />
+          </div>
+        </details>
+
+        <slot />
+
+        <!-- Prev / next chapter -->
+        {(prev || next) && (
+          <nav class="mt-16 pt-6 border-t border-gray-200 grid grid-cols-2 gap-4" aria-label="Chapter navigation">
+            <div>
+              {prev && (
+                <a
+                  href={prev.href}
+                  class="group block h-full rounded-lg border border-gray-200 p-4 hover:border-blue-300 transition-colors"
+                >
+                  <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">← Previous</span>
+                  <span class="mt-1 block font-medium text-gray-900 group-hover:text-blue-600">{prev.title}</span>
+                </a>
+              )}
+            </div>
+            <div>
+              {next && (
+                <a
+                  href={next.href}
+                  class="group block h-full rounded-lg border border-gray-200 p-4 text-right hover:border-blue-300 transition-colors"
+                >
+                  <span class="block text-xs font-medium uppercase tracking-wide text-gray-400">Next →</span>
+                  <span class="mt-1 block font-medium text-gray-900 group-hover:text-blue-600">{next.title}</span>
+                </a>
+              )}
+            </div>
+          </nav>
+        )}
+      </div>
+    </div>
+  </div>
+</BaseLayout>

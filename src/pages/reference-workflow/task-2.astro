@@ -1,0 +1,83 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+import PromptBox from '../../components/PromptBox.astro';
+import EpisodeNote from '../../components/EpisodeNote.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const p2 = `Next task: compute error statistics comparing each model's forecasts to the era5 reference.
+
+<goal>
+Mean error, mean absolute error, and RMSE for each model, variable, and lead, computed in the units the records carry. Conversion to the report units (temperatures in °F, wind speeds in mph, precipitation in inches) happens once, at the reporting boundary, as the project file requires.
+</goal>
+
+<plan>
+Before any code, state three things in writing. The aggregation rule: what is compared at the finest level (a matched pair at one valid hour), what gets summed or averaged, at what level means or ratios are formed, and how a missing value in either series affects the counts. And the unit path: the units the records carry, confirmation that every statistic is computed in those units, and the single reporting-boundary site where the conversion to report units happens. And the direction rule: wind direction is circular, so say how the difference between a forecast and a reference direction is computed. Append this to PLAN.md, rebuild plan.html from it, present the page, and wait for my approval before implementing.
+</plan>
+
+<implement>
+At the conversion site, declare the units in executable form: assert the source units (read from the units the records carry, not hard-coded) and the target units, so a mismatch fails loudly instead of surviving as a comment. Keep the underlying counts and partial sums alongside every aggregate you report. A statistic with no matched pairs is reported as unavailable, with its count of zero: never as zero, and never silently left out.
+</implement>
+
+<verify>
+1. Counts first: demonstrate, on our data, the difference between aggregating counts and sums and then forming the statistic, versus averaging per-day statistics. Show both numbers for one case. If they happen to agree here, explain the conditions under which they would not.
+2. Independent recomputation: recompute RMSE for one model, variable, and lead by a different route than the pipeline used (a different library, or hand-rolled from the definition) and compare within a tolerance you justify. Why that tolerance, and not one ten times looser?
+3. Hand check: pick one matched pair out of the raw response files, walk it by hand from raw values to its reported number, conversion included, and show that the pipeline produces the same value for that hour.
+4. Direction: show the computed direction error for a pair that crosses north (forecast 350°, reference 10°) and confirm its magnitude is 20°, not 340°.
+
+Show me the resulting table for one model at one lead, with units in the column headers, and wait for my review.
+</verify>`;
+---
+
+<RwLayout
+  title="Task 2: Compute — Reference Workflow"
+  description="Error statistics for each model, variable, and lead, computed in the data's own units, converted once for reporting, and aggregated counts-first."
+  current="task-2"
+>
+    <h1 class="text-3xl font-bold text-gray-900">Task 2: Compute</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      The error statistics, computed in the data's own units and converted once.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        Task 1 ended with tidy records of the forecasts and the reference. This task computes the
+        error statistics from them — mean error, mean absolute error, and RMSE for each model,
+        variable, and lead — in the units the data arrived in. The conversion to report units
+        happens once, at the reporting boundary. The prompt has the agent back that conversion
+        with an assertion: a check in the code that fails if the units are not what the data
+        declared, where a comment would only name them. If you want to check the numbers by hand,
+        the <a href={`${base}reference-workflow/statistics/`}>statistics appendix</a> defines each
+        quantity and the aggregation rule.
+      </p>
+
+      <PromptBox label="Prompt 2 — compute: plan the aggregation, implement, verify" text={p2} />
+
+      <p><strong>While it runs, watch for two things.</strong></p>
+      <ul>
+        <li>
+          Ask the agent to explain the choices it makes, starting with this one: "what
+          aggregation rule are we using, and why?" Having to explain a choice is a check in
+          itself, and it sometimes surfaces a flaw before the numbers would. How you ask matters.
+          A question sent as a regular prompt joins the agent's working context, and the agent
+          treats it as an added instruction, handling it alongside the work in progress. In
+          Claude Code and Codex, <code>/btw</code> asks a side question that stays out of that
+          context, so the work carries on as planned.
+        </li>
+        <li>
+          Watch where the units get enforced. An assertion fed from the units the data itself
+          declared can fail; a comment naming the units can't. The Community Repository's
+          <code>unit-check</code> skill packages the pattern.
+        </li>
+      </ul>
+
+      <EpisodeNote>
+        <p>
+          In an adapter built against the same family of verification statistics, averaging
+          per-file scores instead of aggregating counts first moved a skill score by roughly
+          thirteen percent. Every line of the arithmetic was valid, and nothing in the output
+          showed that the number was wrong.
+        </p>
+      </EpisodeNote>
+    </article>
+</RwLayout>

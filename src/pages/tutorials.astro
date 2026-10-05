@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout
+  title="Tutorial series — Scientific Agentic Engineering"
+  description="The fellowship's tutorial series, planned for early 2027. This page will carry the tutorials when they land."
+>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900">Tutorial series</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      Planned. This page will carry the tutorials when they land.
+    </p>
+
+    <div class="mt-8 space-y-6 text-gray-600 leading-relaxed">
+      <p>
+        The tutorial series is the fellowship's third-milestone deliverable, due January 31,
+        2027. It complements the
+        <a href={`${base}framework/`} class="text-blue-600 hover:underline">framework</a> and the
+        <a href={`${base}reference-workflow/`} class="text-blue-600 hover:underline">Reference Workflow</a>,
+        which stand on their own; nothing in them waits on this series.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

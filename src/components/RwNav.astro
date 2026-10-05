@@ -1,0 +1,133 @@
+---
+// Reference Workflow sidebar: the ordered chapter list (navigation) with the
+// current page's section headings nested beneath it (table of contents), plus
+// the three appendix pages in their own group. Same pattern as FrameworkNav;
+// the scroll-spy script highlights whichever section is at the top of the
+// viewport.
+interface Section { slug: string; text: string; }
+interface Page { id: string; href: string; title: string; }
+interface Props {
+  chapters: Page[];
+  appendices: Page[];
+  current: string;
+  sections: Section[];
+}
+
+const { chapters, appendices, current, sections } = Astro.props;
+
+const rowClass = (active: boolean) => [
+  'group flex gap-2.5 rounded-md px-2 py-1.5 transition-colors',
+  active
+    ? 'bg-blue-50 text-blue-700 font-semibold'
+    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50',
+];
+---
+
+<nav aria-label="Reference Workflow contents" class="text-sm">
+  <ol class="space-y-0.5">
+    {chapters.map((ch, i) => {
+      const isCurrent = ch.id === current;
+      return (
+        <li>
+          <a href={ch.href} aria-current={isCurrent ? 'page' : undefined} class:list={rowClass(isCurrent)}>
+            <span class:list={['tabular-nums', isCurrent ? 'text-blue-400' : 'text-gray-400']}>{i + 1}</span>
+            <span>{ch.title}</span>
+          </a>
+
+          {isCurrent && sections.length > 0 && (
+            <ul class="mt-1 mb-2 ml-[1.65rem] space-y-0.5 border-l border-gray-200 pl-3">
+              {sections.map((s) => (
+                <li>
+                  <a
+                    href={`#${s.slug}`}
+                    data-toc-link
+                    data-slug={s.slug}
+                    class="block rounded px-2 py-1 text-[0.8rem] leading-snug text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    {s.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      );
+    })}
+  </ol>
+
+  <p class="mt-4 mb-1 px-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Appendices</p>
+  <ul class="space-y-0.5">
+    {appendices.map((ref) => {
+      const isCurrent = ref.id === current;
+      return (
+        <li>
+          <a href={ref.href} aria-current={isCurrent ? 'page' : undefined} class:list={rowClass(isCurrent)}>
+            <span>{ref.title}</span>
+          </a>
+
+          {isCurrent && sections.length > 0 && (
+            <ul class="mt-1 mb-2 ml-2 space-y-0.5 border-l border-gray-200 pl-3">
+              {sections.map((s) => (
+                <li>
+                  <a
+                    href={`#${s.slug}`}
+                    data-toc-link
+                    data-slug={s.slug}
+                    class="block rounded px-2 py-1 text-[0.8rem] leading-snug text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    {s.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+<script>
+  // Scroll-spy: mark the "on this page" link whose section heading is currently
+  // nearest the top of the viewport. Works without JS too — the links are plain
+  // anchors; this only adds the active-highlight-on-scroll enhancement.
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+  if (links.length) {
+    const slugs = [...new Set(links.map((l) => l.dataset.slug))].filter(Boolean) as string[];
+
+    const setActive = (slug: string) => {
+      for (const l of links) {
+        const on = l.dataset.slug === slug;
+        l.classList.toggle('text-blue-700', on);
+        l.classList.toggle('font-medium', on);
+        l.classList.toggle('text-gray-500', !on);
+        if (on) l.setAttribute('aria-current', 'true');
+        else l.removeAttribute('aria-current');
+      }
+    };
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const doc = document.scrollingElement || document.documentElement;
+      // At the page bottom the last sections can't scroll past the trigger line,
+      // so activate the final one directly; otherwise take the last heading above it.
+      let current = slugs[slugs.length - 1];
+      if (window.scrollY + doc.clientHeight < doc.scrollHeight - 2) {
+        current = slugs[0];
+        for (const s of slugs) {
+          const el = document.getElementById(s);
+          if (el && el.getBoundingClientRect().top <= 120) current = s;
+        }
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  }
+</script>

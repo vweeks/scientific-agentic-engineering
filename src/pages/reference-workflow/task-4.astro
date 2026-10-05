@@ -1,0 +1,111 @@
+---
+import RwLayout from '../../layouts/RwLayout.astro';
+import PromptBox from '../../components/PromptBox.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const p4 = `No new features in this task. The work gets evaluated by an agent that had no part in building it, and the findings come back to me.
+
+<package>
+Write CLAIM.md stating what this application asserts: which statistics and figures it produces, computed how, within what tolerances. State explicitly what has not been verified. Then assemble an evaluation package: the code, the raw response files under data/raw/, PROVENANCE.md, the output tables and figures, and CLAIM.md. Not the conversation history, and not your own summary of it.
+</package>
+
+<evaluate>
+Where the evaluator runs is my choice, so ask me before launching anything: you launch the fresh agent yourself, or you assemble the package as a handoff and I run the evaluator in a different tool. Either way it gets exactly two things and no other context: the package, and the brief between the triple quotes below. Not this conversation, and not your account of the project.
+
+If I choose a different tool, stop once the package is assembled and tell me it is ready; I will give the evaluator the package and the brief, and paste its report back.
+
+"""
+You are evaluating a small forecast-verification application that you did not write. You have its code, the raw response files it was built from, its provenance record, its output tables and figures, and a claim of what it asserts. Your job is to uncover what could be wrong before a human has to, not to admire what is right.
+
+Assume nothing is correct just because it runs or renders. In particular:
+
+- Trace which data series each figure panel actually reads, and compare that against what its labels claim.
+- Check units at every conversion site against the units the provenance record says the data arrived in.
+- Check time alignment: timezone handling, and what previous_dayN was taken to mean.
+- Check the aggregation order behind every reported statistic: counts and sums first, or averages of averages?
+- Check whether any check in this code could ever fail. Pick one and describe the input that would make it fail.
+- Recompute at least one reported statistic independently from the raw response files and compare.
+- Check several plotted values against the output tables, including at least one from the wind roses.
+
+Report findings ordered by severity, each with its evidence and where you looked. Where you find nothing wrong, say what you did to look.
+"""
+</evaluate>
+
+<findings>
+Bring me the evaluator's report unedited, and wait for my review. After my review: confirm or refute each finding against the raw response files (not against your memory of the code) and fix what is confirmed.
+
+Close the task with two things. (1) Feed the most load-bearing check in this project a deliberately wrong answer and show me it failing. (2) Update CLAIM.md into a final record: what was verified and how, what the evaluator found and what happened to each finding, and what remains unverified. An accurate account of what was not verified is part of the record.
+</findings>`;
+---
+
+<RwLayout
+  title="Task 4: Evaluate — Reference Workflow"
+  description="A fresh agent that had no part in the build evaluates the packaged work, and the findings come back to you."
+  current="task-4"
+>
+    <h1 class="text-3xl font-bold text-gray-900">Task 4: Evaluate</h1>
+    <p class="mt-3 text-lg text-gray-600">
+      No new features. The work goes to a fresh agent, and the findings come back to you.
+    </p>
+
+    <article class="prose prose-gray max-w-none mt-8">
+      <p>
+        In the original episode, the failures in the earlier tasks' episode notes were found by a
+        human meticulously combing the interface and the code after the fact. This task delegates
+        that crawl to a fresh agent, and your job becomes reviewing the evaluator's findings and
+        spot-checking the ones that matter. What makes the evaluator independent is its context,
+        not which tool runs it: it gets the claim and the package the prompt assembles, never the
+        conversation that produced the work, and never a free run at the codebase, which would
+        only rebuild the assumptions under review. The framework calls the principle
+        <a href={`${base}framework/patterns/#fresh-eyes-critique`}>fresh-eyes critique</a>. It
+        also costs less. Every message to an agent sends its whole conversation along with it, so
+        an evaluator that starts from a small package uses far fewer tokens than one working
+        inside the long build conversation.
+      </p>
+      <p>
+        Nothing ties this evaluation to the end of a project; the same step can close any task.
+        The exercise runs it once, here, where there is a whole application to evaluate.
+      </p>
+      <p>
+        The evaluator's brief covers wiring, units, time alignment, aggregation, and whether the
+        project's checks can fail at all, and it asks for anything else the evaluator finds. Two
+        failure modes from the catalog deserve a mention because both are quiet by nature:
+      </p>
+      <ul>
+        <li>
+          <strong>Precision loss:</strong> a statistic recomputed from rounded intermediates drifts
+          from one computed from the raw values, by an amount a loose tolerance absorbs.
+        </li>
+        <li>
+          <strong>Over-trust:</strong> accepting output because it renders and reads fluently.
+        </li>
+      </ul>
+
+      <PromptBox label="Prompt 4 — evaluate: claim, package, fresh evaluation, findings" text={p4} />
+
+      <p>
+        The agent asks where the evaluator should run: it launches the fresh agent itself, or
+        it assembles the package for you to hand to a different tool. If you take the
+        different-tool route, give the evaluator the package plus the brief from between the
+        prompt's triple quotes, and nothing else.
+      </p>
+
+      <p><strong>While it runs, watch for three things.</strong></p>
+      <ul>
+        <li>
+          The evaluator gets only the package; including the build conversation would just hand
+          it the same context that produced any mistakes.
+        </li>
+        <li>
+          An evaluator that finds nothing has not proven the work correct. Read its account of
+          what it checked before you accept the result.
+        </li>
+        <li>
+          If you and a colleague ran different locations or windows, your final numbers should
+          differ. Identical numbers despite different fetch specs mean something upstream ignored
+          a spec; the task-1 provenance records are where to look first.
+        </li>
+      </ul>
+    </article>
+</RwLayout>

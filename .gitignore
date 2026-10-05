@@ -22,6 +22,10 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# python bytecode and test caches (skill + MCP template test runs)
+__pycache__/
+.pytest_cache/
+
 # Block sensitive/large file types broadly
 *.docx
 *.xlsx
