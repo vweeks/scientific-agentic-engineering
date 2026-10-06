@@ -10,10 +10,14 @@ const pSetup = `Set up this project's instruction file, AGENTS.md (the file of s
 This repository scores recent weather forecasts against the ERA5 reanalysis.
 
 Conventions:
-- All internal computation in the API's native units (°C, km/h, mm). Report tables and figures in °F, mph, and inches. Convert once, at the reporting boundary, never mid-pipeline.
+- All internal computation in the API's native units (°C, km/h, mm, %). Report tables and figures in °F, mph, inches, and %. Convert once, at the reporting boundary, never mid-pipeline.
 - All times UTC (timezone=GMT at fetch). A displayed time states its zone.
 - Raw API responses under data/raw/ are read-only once hashed into PROVENANCE.md. Every claim about what the data says must be checkable against them.
 - A null in a response is an explicitly missing value in our records: never zero, never a silently dropped row.
+
+Plan page:
+- plan.html is what I read before approving a plan, so it must be easier to scan than terminal output. Give each part of the plan its own heading. Write steps, files, and assumptions as lists, and anything with repeated fields (requests, files, series) as a table. Put URLs, file paths, and field names in code formatting.
+- Before presenting plan.html, check the generated HTML: every list and table in PLAN.md must come out as a list or table, not as a run-on paragraph.
 
 Gates. Stop and ask before:
 - deleting or rewriting anything under data/raw/,

@@ -56,7 +56,7 @@ const sections = [
         <tbody>
           <tr><td><code>gfs_global</code></td><td>NOAA GFS</td><td>Physics-based (NWP)</td></tr>
           <tr><td><code>ecmwf_ifs025</code></td><td>ECMWF IFS, 0.25°</td><td>Physics-based (NWP)</td></tr>
-          <tr><td><code>gfs_graphcast025</code></td><td>GraphCast, GFS-initialized</td><td>Machine-learning</td></tr>
+          <tr><td><code>ncep_aigfs025</code></td><td>NOAA AIGFS, GFS-initialized</td><td>Machine-learning</td></tr>
           <tr><td><code>ecmwf_aifs025_single</code></td><td>ECMWF AIFS, single</td><td>Machine-learning</td></tr>
         </tbody>
       </table>
@@ -101,8 +101,9 @@ const sections = [
           episode note describes what omitting this parameter cost the original build.)
         </li>
         <li>
-          Default units are metric: <strong>°C, km/h, mm</strong>. The exercise fetches at
-          defaults and converts to report units (°F, mph, inches) once, at the reporting
+          Default units are metric: <strong>°C, km/h, mm</strong>, and % for relative humidity.
+          The exercise fetches at defaults and converts to report units (°F, mph, inches;
+          humidity stays in %) once, at the reporting
           boundary, so the conversion exists as code that can carry assertions rather than as a
           query parameter.
         </li>
@@ -110,19 +111,34 @@ const sections = [
 
       <h2 id="verified-behaviors">Verified behaviors</h2>
       <p>
-        Three behaviors confirmed against the live API while this page was drafted, each with the
+        Four behaviors confirmed against the live API while this page was drafted, each with the
         date it was checked. Any of them may change; the date is part of the fact.
       </p>
       <ol>
         <li>
           <strong>A model can return nothing at all, and the response still looks
-          normal.</strong> On 2026-09-29, <code>gfs_graphcast025</code> returned all-null arrays
-          for every variable at every lead, in every window tried back to June 2026, with a
-          perfectly ordinary <code>hourly_units</code> entry attached; the same request against
-          <code>ecmwf_aifs025_single</code> returned complete series. (On 2026-09-14 the pattern
-          was different: the machine-learning models' wind series came back empty.) A series with
-          no values produces no matched pairs, so its statistics are unavailable. Record that; do
-          not let an agent fill the series or drop it silently.
+          normal.</strong> GraphCast (<code>gfs_graphcast025</code>), which this exercise
+          used before, stopped receiving new forecasts in December 2025, when NOAA made AIGFS its
+          operational replacement. Open-Meteo still accepts the model: on 2026-10-05 it returned
+          all-null arrays for every variable at every lead in a September 2026 window, with a
+          perfectly ordinary <code>hourly_units</code> entry attached, and several of its lead
+          series were empty even in 2025 windows. Its replacement, <code>ncep_aigfs025</code>,
+          returned complete series for September 2026 for every variable but one (the next
+          item), though its runs from early 2026 have
+          whole-day gaps at some leads. A series with no values produces no matched pairs, so its
+          statistics are unavailable. Record that; do not let an agent fill the series or drop it
+          silently.
+        </li>
+        <li>
+          <strong>A model can lack a variable entirely, and says so only in its
+          units.</strong> On 2026-10-05, <code>ncep_aigfs025</code> returned all-null arrays for
+          <code>relative_humidity_2m</code> at every lead, in every 2026 window tried and on the
+          live forecast API, while the other three models and ERA5 returned complete series. The
+          tell is in <code>hourly_units</code>: the other models report <code>"%"</code>, AIGFS
+          reports the string <code>"undefined"</code>. An agent that copies units straight from
+          the response will label a whole series with a unit that is not a unit. The statistics
+          for that series are unavailable, as above, and its line is absent from the humidity
+          chart.
         </li>
         <li>
           <strong><code>bounding_box</code> is not supported for every model</strong>

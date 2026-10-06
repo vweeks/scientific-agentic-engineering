@@ -9,7 +9,7 @@ const checklistUrl = `${import.meta.env.SITE}${base}reference-workflow/visual-ch
 const p3 = `Next task: figures.
 
 <goal>
-Two figure sets. (1) Error by lead: for each variable, one chart with a line per model, RMSE on the y-axis in the report units and forecast lead on the x-axis. (2) A wind comparison at one lead: two wind roses side by side, one drawn from the era5 reference series and one drawn from one model's forecast series, with the speed/direction pairing stated.
+Two figure sets. (1) Error by lead: for each variable, one chart with a line per model, RMSE on the y-axis in the report units and forecast lead on the x-axis. (2) A wind comparison at one lead: two wind roses side by side, one drawn from the era5 reference series and one drawn from one model's forecast series, with the speed/direction pairing stated. Output is static files: each figure as a PNG, plus a single standalone report.html that shows the figures with the task-2 tables. No server or dashboard framework.
 </goal>
 
 <plan>
