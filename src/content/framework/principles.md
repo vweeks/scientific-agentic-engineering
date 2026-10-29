@@ -57,7 +57,7 @@ It is also where a workflow's independence comes from. A critique or a verificat
 
 The four principles before this one are general: they hold for any software built with agents. This one is what scientific work adds. General-purpose tooling checks syntax, types, style, and whether the tests pass, and models are steadily getting better at proposing checks of their own. What none of that settles is whether a flux should be conserved here, which unit convention this interface assumes, or what tolerance counts as passing for this problem. Those are claims about your science, and they stay yours to make.
 
-A domain-specific safeguard is any check you add because the failure it guards against is invisible to everything else: a physics assertion, a precision test, a bound on a scope the agent is not allowed to cross. They only make sense in a scientific context, which is why they are absent by default and why they are the ones that matter. The project's community repository will release a curated starter set of such checks — unit checkers, conservation-law validators — as examples to build from.
+A domain-specific safeguard is any check you add because the failure it guards against is invisible to everything else: a physics assertion, a precision test, a bound on a scope the agent is not allowed to cross. They only make sense in a scientific context, which is why they are absent by default and why they are the ones that matter. The project's [community repository](https://github.com/vweeks/sae-community) collects such checks as examples to build from, starting with a unit checker that holds code to the units its data declares.
 
 ## How the five fit together
 

@@ -429,6 +429,30 @@ This is the first post-deploy defect in the project, and it exposes a gap in Ses
 
 ---
 
+## Session 4 — 2026-10-29: Milestone 2 Close-Out Audit
+
+### Interaction 16: Audit M2 Deliverables and Announce the Community Repository
+
+**Human prompt (paraphrased):**
+> Check each Milestone 2 deliverable and report what is missing; then fix the site-side gaps for the Community Repository.
+
+**What the AI did:**
+- Compared each deliverable against what was actually published: the live site, the `sae-community` repository and its tags and releases, and the US-RSE'26 folder and Zenodo record
+- Edited `src/pages/index.astro`, `src/components/Nav.astro`, `src/pages/overview.astro`, `src/content/framework/principles.md`
+
+**Key findings/output:**
+- The Community Repository had been public and tagged since Oct 12, but the homepage card still read "Expected October 2026" and nothing in the nav linked to it. The site understated the project's own progress for more than two weeks.
+- The site promised "conservation-law validators" in the repository; none shipped. The talk notes had already flagged this, but the site copy was never reconciled.
+- The homepage card now links to the repository and lists what actually shipped; a "Community" nav link was added; the validator promise in the principles chapter and overview was reworded to describe what exists
+
+**Human decisions:**
+- Chose to reword the promise rather than build a validator before the deadline
+
+**Observation:**
+Copy written ahead of a release ("coming soon," "will release") does not update itself when the release happens. Comparing the site against the artifacts it describes found two stale statements that page-level review had missed. This is the same check the framework asks for on scientific claims, applied here to the project's own claims about itself.
+
+---
+
 ## Template for Future Entries
 
 ```markdown
